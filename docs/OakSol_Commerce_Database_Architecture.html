@@ -1,0 +1,2952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OakSol Commerce - Database Architecture (Phase 1)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-rgb: 37, 99, 235;
+      --border-color: #e2e8f0;
+      
+      --type-uuid: #7c3aed;
+      --type-varchar: #2563eb;
+      --type-numeric: #059669;
+      --type-boolean: #d97706;
+      --type-time: #db2777;
+      --type-json: #4f46e5;
+      
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0b0f19;
+      --card-bg: #111827;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #f3f4f6;
+      --accent: #3b82f6;
+      --accent-rgb: 59, 130, 246;
+      --border-color: #1f2937;
+      
+      --type-uuid: #a78bfa;
+      --type-varchar: #60a5fa;
+      --type-numeric: #34d399;
+      --type-boolean: #fbbf24;
+      --type-time: #f472b6;
+      --type-json: #818cf8;
+      
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Toolbar for interactive viewing */
+    .no-print-toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+      z-index: 1000;
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      color: var(--text-main);
+    }
+
+    .btn:hover {
+      background: var(--border-color);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    /* Split layout for Screen, Single column for Print */
+    .main-layout {
+      display: flex;
+      max-width: 1400px;
+      margin: 60px auto 0 auto;
+      min-height: calc(100vh - 60px);
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 280px;
+      position: fixed;
+      top: 60px;
+      bottom: 0;
+      left: max(0px, calc((100% - 1400px) / 2));
+      border-right: 1px solid var(--border-color);
+      padding: 2rem 1.5rem;
+      overflow-y: auto;
+      background: var(--card-bg);
+      z-index: 90;
+    }
+
+    .sidebar h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      margin-bottom: 2rem;
+    }
+
+    .sidebar-menu li {
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar-menu a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.35rem 0.5rem;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .sidebar-menu a:hover {
+      background: var(--bg-color);
+      color: var(--accent);
+    }
+
+    .sidebar-menu a.active {
+      background: rgba(var(--accent-rgb), 0.08);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .table-count-badge {
+      font-size: 0.75rem;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      padding: 0.1rem 0.4rem;
+      border-radius: 99px;
+      color: var(--text-muted);
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      margin-left: 280px;
+      padding: 3rem 4.5rem;
+      background: var(--card-bg);
+      border-right: 1px solid var(--border-color);
+    }
+
+    /* Cover Page styling */
+    .cover-page {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 650px;
+      padding-bottom: 2rem;
+      margin-bottom: 4rem;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .cover-header {
+      margin-top: 4rem;
+    }
+
+    .cover-logo {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      margin-bottom: 1.5rem;
+    }
+
+    .cover-logo span {
+      color: var(--accent);
+    }
+
+    .cover-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 3.25rem;
+      line-height: 1.15;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .cover-subtitle {
+      font-size: 1.4rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      margin-bottom: 2rem;
+    }
+
+    .stats-strip {
+      display: flex;
+      gap: 3rem;
+      margin-top: 1rem;
+    }
+
+    .stat-box {
+      border-left: 3px solid var(--accent);
+      padding-left: 1rem;
+    }
+
+    .stat-num {
+      font-size: 2.25rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .cover-meta {
+      border-top: 1px solid var(--border-color);
+      padding-top: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .meta-item span {
+      display: block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .meta-item p {
+      font-weight: 600;
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    /* Page Breaks */
+    .page-break {
+      page-break-before: always;
+      margin-top: 4rem;
+    }
+
+    /* Section Headings */
+    h1, h2, h3, h4 {
+      color: var(--primary);
+    }
+
+    h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.85rem;
+      font-weight: 600;
+      margin-top: 4rem;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h3 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tag-mod {
+      font-size: 0.7rem;
+      background-color: #eab308;
+      color: #000000;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .tag-new {
+      font-size: 0.7rem;
+      background-color: var(--accent);
+      color: #ffffff;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    p {
+      margin-bottom: 1.2rem;
+      color: var(--text-muted);
+      font-size: 0.975rem;
+      text-align: justify;
+    }
+
+    /* Column Typography Color Coding */
+    .col-uuid { color: var(--type-uuid); font-weight: 600; }
+    .col-varchar { color: var(--type-varchar); font-weight: 600; }
+    .col-numeric { color: var(--type-numeric); font-weight: 600; }
+    .col-boolean { color: var(--type-boolean); font-weight: 600; }
+    .col-time { color: var(--type-time); font-weight: 600; }
+    .col-json { color: var(--type-json); font-weight: 600; }
+
+    /* Schema Table Styling */
+    .schema-table-wrapper {
+      margin-bottom: 2.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .schema-table-header {
+      background: var(--bg-color);
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .schema-table-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text-main);
+    }
+
+    .schema-table-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    table.schema-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    table.schema-table th, table.schema-table td {
+      padding: 0.65rem 1rem;
+      border: none;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    table.schema-table th {
+      background: var(--bg-color);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    table.schema-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.schema-table td.col-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--text-main);
+      width: 25%;
+    }
+
+    table.schema-table td.col-type {
+      font-family: 'JetBrains Mono', monospace;
+      width: 25%;
+    }
+
+    table.schema-table td.col-note {
+      width: 50%;
+      color: var(--text-muted);
+    }
+
+    /* Index table */
+    table.index-table th, table.index-table td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border-color);
+    }
+    
+    table.index-table td.idx-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+
+    table.index-table td.idx-target {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Callout */
+    .callout {
+      background-color: var(--bg-color);
+      border-left: 4px solid var(--accent);
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .callout p {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    /* Grid for Design Decisions */
+    .decisions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .decision-card {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: var(--card-bg);
+    }
+
+    .decision-card h4 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .decision-card p {
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    /* Print settings overrides */
+    @media print {
+      .no-print-toolbar, .sidebar {
+        display: none;
+      }
+
+      .main-layout {
+        margin: 0;
+        min-height: 0;
+      }
+
+      .content-area {
+        margin-left: 0;
+        padding: 0;
+        border: none;
+      }
+
+      .cover-page {
+        min-height: 100vh;
+        margin-bottom: 0;
+        border-bottom: none;
+      }
+
+      .page-break {
+        page-break-before: always;
+        margin-top: 0;
+        padding-top: 1.5rem;
+      }
+
+      .schema-table-wrapper, .decision-card, .callout {
+        border: 1px solid #000000 !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      table.schema-table th, table.schema-table td, table.index-table th, table.index-table td {
+        border-bottom: 1px solid #000000 !important;
+        color: #000000 !important;
+      }
+
+      .col-uuid, .col-varchar, .col-numeric, .col-boolean, .col-time, .col-json {
+        color: #000000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Toolbar -->
+  <div class="no-print-toolbar">
+    <div class="toolbar-title">OakSol Commerce — Database Schema</div>
+    <div class="toolbar-actions">
+      <button class="btn" id="theme-toggle">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
+        </svg>
+        Toggle Theme
+      </button>
+      <button class="btn btn-primary" onclick="window.print()">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+          <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+        </svg>
+        Print / Save as PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <h3>Schema Groups</h3>
+      <ul class="sidebar-menu">
+        <li><a href="#group-tenant">Shop &amp; Tenant <span class="table-count-badge">2</span></a></li>
+        <li><a href="#group-system">System <span class="table-count-badge">3</span></a></li>
+        <li><a href="#group-catalog">Product Catalog <span class="table-count-badge">8</span></a></li>
+        <li><a href="#group-inventory">Inventory <span class="table-count-badge">2</span></a></li>
+        <li><a href="#group-customer">Customer <span class="table-count-badge">2</span></a></li>
+        <li><a href="#group-order">Cart &amp; Order <span class="table-count-badge">7</span></a></li>
+        <li><a href="#group-payment">Payment <span class="table-count-badge">3</span></a></li>
+        <li><a href="#group-marketing">Marketing <span class="table-count-badge">2</span></a></li>
+      </ul>
+
+      <h3>Operations &amp; Mapping</h3>
+      <ul class="sidebar-menu">
+        <li><a href="#section-indexes">Indexes &amp; Performance</a></li>
+        <li><a href="#section-er">Entity Relationships</a></li>
+        <li><a href="#section-decisions">Key Design Decisions</a></li>
+      </ul>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div class="content-area">
+      
+      <!-- COVER PAGE -->
+      <div class="cover-page">
+        <div class="cover-logo">
+          OakSol <span>Commerce</span>
+        </div>
+        
+        <div class="cover-header">
+          <h1 class="cover-title">Database Architecture</h1>
+          <p class="cover-subtitle">Phase 1 — Multi-Tenant PostgreSQL Schema Specification</p>
+          
+          <div class="stats-strip">
+            <div class="stat-box">
+              <div class="stat-num">32</div>
+              <div class="stat-label">Total Tables</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">8</div>
+              <div class="stat-label">Domain Groups</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">19</div>
+              <div class="stat-label">ER Relationships</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">16</div>
+              <div class="stat-label">Optimised Indexes</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cover-meta">
+          <div class="meta-item">
+            <span>Prepared For</span>
+            <p>Mokasafat Amir Behesti (Boss)</p>
+          </div>
+          <div class="meta-item">
+            <span>Prepared By</span>
+            <p>Aftab | OakSol Commerce</p>
+          </div>
+          <div class="meta-item">
+            <span>Database Engine</span>
+            <p>PostgreSQL 16+</p>
+          </div>
+          <div class="meta-item">
+            <span>Date &amp; Security</span>
+            <p>June 4, 2026 · Confidential</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 2: TABLE OF CONTENTS & INTRODUCTION -->
+      <h2>1. Overview &amp; Isolation Strategy</h2>
+      <p>
+        The OakSol Commerce database is architected to support enterprise-grade SaaS operations from day one. By adopting a shared-database, shared-schema pattern with UUID primary keys and mandatory <code>shop_id</code> foreign key columns, the application achieves robust logical isolation. This design prevents cross-tenant data leaks and eliminates the need for expensive database redesigns when transitioning from a single-store pilot (Phase 1) to a multi-merchant SaaS platform (Phase 2).
+      </p>
+
+      <div class="callout">
+        <p>
+          <strong>Security Compliance:</strong> All tables carrying tenant data reference <code>shops(id)</code>. Rows are queried using explicit tenant filtering. API keys and payment secrets are configured to be encrypted at rest in the database layer.
+        </p>
+      </div>
+
+      <!-- PAGE 3: SHOP & TENANT GROUP -->
+      <div class="page-break" id="group-tenant"></div>
+      <h2>2. Shop &amp; Tenant</h2>
+      <p>This module houses the core merchant definitions and public access routing configurations.</p>
+
+      <!-- shops -->
+      <h3>shops <span class="tag-new">NEW</span></h3>
+      <p>Every merchant account on the platform. Represents the root of the multi-tenancy hierarchy.</p>
+      <div class="schema-table-wrapper">
+        <div class="schema-table-header">
+          <div class="schema-table-title">shops</div>
+          <div class="schema-table-desc">Core Tenant Registrations</div>
+        </div>
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">name</td>
+              <td class="col-type col-varchar">VARCHAR(150) NOT NULL</td>
+              <td class="col-note">Display name of the shop</td>
+            </tr>
+            <tr>
+              <td class="col-name">slug</td>
+              <td class="col-type col-varchar">VARCHAR(100) UNIQUE NOT NULL</td>
+              <td class="col-note">URL-safe unique identifier</td>
+            </tr>
+            <tr>
+              <td class="col-name">owner_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES users(id)</td>
+              <td class="col-note">FK → users (Owner account link)</td>
+            </tr>
+            <tr>
+              <td class="col-name">plan</td>
+              <td class="col-type col-varchar">VARCHAR(50) DEFAULT 'free'</td>
+              <td class="col-note">free / starter / pro</td>
+            </tr>
+            <tr>
+              <td class="col-name">status</td>
+              <td class="col-type col-varchar">VARCHAR(30) DEFAULT 'active'</td>
+              <td class="col-note">active / suspended / deleted</td>
+            </tr>
+            <tr>
+              <td class="col-name">logo_url</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">CDN path to branding logo</td>
+            </tr>
+            <tr>
+              <td class="col-name">description</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Brief bio/description</td>
+            </tr>
+            <tr>
+              <td class="col-name">currency</td>
+              <td class="col-type col-varchar">CHAR(3) DEFAULT 'BDT'</td>
+              <td class="col-note">ISO 4217 code (e.g. INR / BDT)</td>
+            </tr>
+            <tr>
+              <td class="col-name">timezone</td>
+              <td class="col-type col-varchar">VARCHAR(60) DEFAULT 'Asia/Dhaka'</td>
+              <td class="col-note">System local timezone</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Record insertion timestamp</td>
+            </tr>
+            <tr>
+              <td class="col-name">updated_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Record update timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- shop_domains -->
+      <h3>shop_domains <span class="tag-new">NEW</span></h3>
+      <p>Domain mappings linking tenant shops to system default subdomains or custom domains.</p>
+      <div class="schema-table-wrapper">
+        <div class="schema-table-header">
+          <div class="schema-table-title">shop_domains</div>
+          <div class="schema-table-desc">Routing Registry</div>
+        </div>
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">domain</td>
+              <td class="col-type col-varchar">VARCHAR(255) UNIQUE NOT NULL</td>
+              <td class="col-note">e.g. shopname.oaksolcommerce.in or customdomain.com</td>
+            </tr>
+            <tr>
+              <td class="col-name">type</td>
+              <td class="col-type col-varchar">VARCHAR(20) DEFAULT 'subdomain'</td>
+              <td class="col-note">subdomain / custom</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_primary</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT FALSE</td>
+              <td class="col-note">One primary domain per shop</td>
+            </tr>
+            <tr>
+              <td class="col-name">status</td>
+              <td class="col-type col-varchar">VARCHAR(30) DEFAULT 'pending'</td>
+              <td class="col-note">pending / active / failed</td>
+            </tr>
+            <tr>
+              <td class="col-name">verified_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ NULL</td>
+              <td class="col-note">Domain validation timestamp</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGE 4: SYSTEM GROUP -->
+      <div class="page-break" id="group-system"></div>
+      <h2>3. System</h2>
+      <p>Handles system staff parameters, configuration metrics, and user action audit trails.</p>
+
+      <!-- users -->
+      <h3>users <span class="tag-mod">MOD</span></h3>
+      <p>Admin and staff accounts linked to specific shops.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">name</td>
+              <td class="col-type col-varchar">VARCHAR(150) NOT NULL</td>
+              <td class="col-note">Full username</td>
+            </tr>
+            <tr>
+              <td class="col-name">email</td>
+              <td class="col-type col-varchar">VARCHAR(255) UNIQUE NOT NULL</td>
+              <td class="col-note">Login and contact email</td>
+            </tr>
+            <tr>
+              <td class="col-name">password_hash</td>
+              <td class="col-type col-varchar">TEXT NOT NULL</td>
+              <td class="col-note">Securely hashed password string</td>
+            </tr>
+            <tr>
+              <td class="col-name">role</td>
+              <td class="col-type col-varchar">VARCHAR(30) DEFAULT 'staff'</td>
+              <td class="col-note">admin / staff</td>
+            </tr>
+            <tr>
+              <td class="col-name">avatar_url</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">User avatar CDN link</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_active</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT TRUE</td>
+              <td class="col-note">Toggle access capability</td>
+            </tr>
+            <tr>
+              <td class="col-name">last_login_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ</td>
+              <td class="col-note">Tracking metrics</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+            <tr>
+              <td class="col-name">updated_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Modification timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- settings -->
+      <h3>settings</h3>
+      <p>Key-value store representing general variables and routing options.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">key</td>
+              <td class="col-type col-varchar">VARCHAR(100) NOT NULL</td>
+              <td class="col-note">e.g. 'smtp_host' (Unique with shop_id)</td>
+            </tr>
+            <tr>
+              <td class="col-name">value</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">JSON string or plain text configs</td>
+            </tr>
+            <tr>
+              <td class="col-name">group</td>
+              <td class="col-type col-varchar">VARCHAR(60)</td>
+              <td class="col-note">email / payment / seo grouping</td>
+            </tr>
+            <tr>
+              <td class="col-name">updated_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Last modifications update</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- activity_logs -->
+      <h3>activity_logs <span class="tag-new">NEW</span></h3>
+      <p>Provides audit trail logs mapping modifications inside the administration pipeline.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">user_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES users(id)</td>
+              <td class="col-note">FK → users (Log source identifier)</td>
+            </tr>
+            <tr>
+              <td class="col-name">action</td>
+              <td class="col-type col-varchar">VARCHAR(100) NOT NULL</td>
+              <td class="col-note">e.g. 'order.status_updated'</td>
+            </tr>
+            <tr>
+              <td class="col-name">entity_type</td>
+              <td class="col-type col-varchar">VARCHAR(60)</td>
+              <td class="col-note">order / product / user category</td>
+            </tr>
+            <tr>
+              <td class="col-name">entity_id</td>
+              <td class="col-type col-uuid">UUID</td>
+              <td class="col-note">Specific UUID reference</td>
+            </tr>
+            <tr>
+              <td class="col-name">metadata</td>
+              <td class="col-type col-json">JSONB DEFAULT '{}'</td>
+              <td class="col-note">Payload snapshot metadata</td>
+            </tr>
+            <tr>
+              <td class="col-name">ip_address</td>
+              <td class="col-type col-varchar">INET</td>
+              <td class="col-note">Client IP address</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Log timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGE 5: PRODUCT CATALOG GROUP -->
+      <div class="page-break" id="group-catalog"></div>
+      <h2>4. Product Catalog</h2>
+      <p>Manages categorization, attributes, items, FAQs, and multiple product variants.</p>
+
+      <!-- categories -->
+      <h3>categories</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">parent_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES categories(id)</td>
+              <td class="col-note">Self-referential parent (NULL = root)</td>
+            </tr>
+            <tr>
+              <td class="col-name">name</td>
+              <td class="col-type col-varchar">VARCHAR(150) NOT NULL</td>
+              <td class="col-note">Category name</td>
+            </tr>
+            <tr>
+              <td class="col-name">slug</td>
+              <td class="col-type col-varchar">VARCHAR(150) NOT NULL</td>
+              <td class="col-note">Unique with shop_id slug</td>
+            </tr>
+            <tr>
+              <td class="col-name">image_url</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Optional display icon URL</td>
+            </tr>
+            <tr>
+              <td class="col-name">sort_order</td>
+              <td class="col-type col-numeric">INT DEFAULT 0</td>
+              <td class="col-note">Ordering priority</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_active</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT TRUE</td>
+              <td class="col-note">Toggle visibility status</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- brands -->
+      <h3>brands</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">name</td>
+              <td class="col-type col-varchar">VARCHAR(150) NOT NULL</td>
+              <td class="col-note">Brand name</td>
+            </tr>
+            <tr>
+              <td class="col-name">slug</td>
+              <td class="col-type col-varchar">VARCHAR(150) NOT NULL</td>
+              <td class="col-note">Unique with shop_id slug</td>
+            </tr>
+            <tr>
+              <td class="col-name">logo_url</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Brand logo path</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_active</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT TRUE</td>
+              <td class="col-note">Status parameter</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- products -->
+      <h3>products</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">category_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES categories(id)</td>
+              <td class="col-note">FK → categories</td>
+            </tr>
+            <tr>
+              <td class="col-name">brand_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES brands(id)</td>
+              <td class="col-note">FK → brands</td>
+            </tr>
+            <tr>
+              <td class="col-name">name</td>
+              <td class="col-type col-varchar">VARCHAR(255) NOT NULL</td>
+              <td class="col-note">Product display title</td>
+            </tr>
+            <tr>
+              <td class="col-name">slug</td>
+              <td class="col-type col-varchar">VARCHAR(255) NOT NULL</td>
+              <td class="col-note">Unique with shop_id slug</td>
+            </tr>
+            <tr>
+              <td class="col-name">description</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Full description payload</td>
+            </tr>
+            <tr>
+              <td class="col-name">short_desc</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">For storefront listing cards</td>
+            </tr>
+            <tr>
+              <td class="col-name">price</td>
+              <td class="col-type col-numeric">NUMERIC(12,2) NOT NULL</td>
+              <td class="col-note">Display sell price</td>
+            </tr>
+            <tr>
+              <td class="col-name">compare_price</td>
+              <td class="col-type col-numeric">NUMERIC(12,2)</td>
+              <td class="col-note">Crossed-out original price</td>
+            </tr>
+            <tr>
+              <td class="col-name">cost_price</td>
+              <td class="col-type col-numeric">NUMERIC(12,2)</td>
+              <td class="col-note">Internal cost analysis (Hidden)</td>
+            </tr>
+            <tr>
+              <td class="col-name">master_sku</td>
+              <td class="col-type col-varchar">VARCHAR(100)</td>
+              <td class="col-note">Global product identifier</td>
+            </tr>
+            <tr>
+              <td class="col-name">status</td>
+              <td class="col-type col-varchar">VARCHAR(30) DEFAULT 'draft'</td>
+              <td class="col-note">draft / active / archived</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_featured</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT FALSE</td>
+              <td class="col-note">Homepage spotlight inclusion</td>
+            </tr>
+            <tr>
+              <td class="col-name">has_variants</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT FALSE</td>
+              <td class="col-note">Multi-variant options trigger</td>
+            </tr>
+            <tr>
+              <td class="col-name">tax_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES taxes(id)</td>
+              <td class="col-note">Tax rate linkage</td>
+            </tr>
+            <tr>
+              <td class="col-name">total_sold</td>
+              <td class="col-type col-numeric">INT DEFAULT 0</td>
+              <td class="col-note">Sales volume caching counter</td>
+            </tr>
+            <tr>
+              <td class="col-name">meta_title</td>
+              <td class="col-type col-varchar">VARCHAR(255)</td>
+              <td class="col-note">SEO Optimization Title</td>
+            </tr>
+            <tr>
+              <td class="col-name">meta_description</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">SEO Optimization description</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Insertion timestamp</td>
+            </tr>
+            <tr>
+              <td class="col-name">updated_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Update timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- product_gallery -->
+      <h3>product_gallery</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">product_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES products(id)</td>
+              <td class="col-note">FK → products (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">url</td>
+              <td class="col-type col-varchar">TEXT NOT NULL</td>
+              <td class="col-note">Image CDN URL location</td>
+            </tr>
+            <tr>
+              <td class="col-name">alt_text</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Alt attributes descriptive text</td>
+            </tr>
+            <tr>
+              <td class="col-name">sort_order</td>
+              <td class="col-type col-numeric">INT DEFAULT 0</td>
+              <td class="col-note">Image sequence order</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_cover</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT FALSE</td>
+              <td class="col-note">Is primary cover image</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- product_variants -->
+      <h3>product_variants</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">product_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES products(id)</td>
+              <td class="col-note">FK → products (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">sku</td>
+              <td class="col-type col-varchar">VARCHAR(100) UNIQUE NOT NULL</td>
+              <td class="col-note">Unique stock keeping unit index</td>
+            </tr>
+            <tr>
+              <td class="col-name">label</td>
+              <td class="col-type col-varchar">VARCHAR(255)</td>
+              <td class="col-note">e.g. 'Red / XL'</td>
+            </tr>
+            <tr>
+              <td class="col-name">price</td>
+              <td class="col-type col-numeric">NUMERIC(12,2) NOT NULL</td>
+              <td class="col-note">Variant specific pricing</td>
+            </tr>
+            <tr>
+              <td class="col-name">compare_price</td>
+              <td class="col-type col-numeric">NUMERIC(12,2)</td>
+              <td class="col-note">Variant compare price</td>
+            </tr>
+            <tr>
+              <td class="col-name">cost_price</td>
+              <td class="col-type col-numeric">NUMERIC(12,2)</td>
+              <td class="col-note">Internal cost</td>
+            </tr>
+            <tr>
+              <td class="col-name">stock_qty</td>
+              <td class="col-type col-numeric">INT DEFAULT 0 NOT NULL</td>
+              <td class="col-note">Current inventory stock level</td>
+            </tr>
+            <tr>
+              <td class="col-name">low_stock_at</td>
+              <td class="col-type col-numeric">INT DEFAULT 5</td>
+              <td class="col-note">Stock alert threshold</td>
+            </tr>
+            <tr>
+              <td class="col-name">image_url</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Variant specific image file</td>
+            </tr>
+            <tr>
+              <td class="col-name">total_sold</td>
+              <td class="col-type col-numeric">INT DEFAULT 0</td>
+              <td class="col-note">Sales volume counter</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_active</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT TRUE</td>
+              <td class="col-note">Active/Inactive toggle status</td>
+            </tr>
+            <tr>
+              <td class="col-name">sort_order</td>
+              <td class="col-type col-numeric">INT DEFAULT 0</td>
+              <td class="col-note">Sorting parameter</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+            <tr>
+              <td class="col-name">updated_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Modification timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- variant_attributes -->
+      <h3>variant_attributes</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">variant_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES product_variants(id)</td>
+              <td class="col-note">FK → variants (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">attr_key</td>
+              <td class="col-type col-varchar">VARCHAR(60) NOT NULL</td>
+              <td class="col-note">e.g. 'color', 'size'</td>
+            </tr>
+            <tr>
+              <td class="col-name">attr_value</td>
+              <td class="col-type col-varchar">VARCHAR(150) NOT NULL</td>
+              <td class="col-note">e.g. 'Red', 'XL'</td>
+            </tr>
+            <tr>
+              <td class="col-name">sort_order</td>
+              <td class="col-type col-numeric">INT DEFAULT 0</td>
+              <td class="col-note">Index ordering</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- product_sections -->
+      <h3>product_sections</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">title</td>
+              <td class="col-type col-varchar">VARCHAR(200) NOT NULL</td>
+              <td class="col-note">e.g. 'Trending Deals' section header</td>
+            </tr>
+            <tr>
+              <td class="col-name">type</td>
+              <td class="col-type col-varchar">VARCHAR(50)</td>
+              <td class="col-note">banner / grid / carousel dynamic design layout</td>
+            </tr>
+            <tr>
+              <td class="col-name">config</td>
+              <td class="col-type col-json">JSONB DEFAULT '{}'</td>
+              <td class="col-note">Layout configuration metrics</td>
+            </tr>
+            <tr>
+              <td class="col-name">sort_order</td>
+              <td class="col-type col-numeric">INT DEFAULT 0</td>
+              <td class="col-note">Visual vertical ordering</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_active</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT TRUE</td>
+              <td class="col-note">Toggle visibility status</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- product_faqs -->
+      <h3>product_faqs</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">product_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES products(id)</td>
+              <td class="col-note">FK → products (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">question</td>
+              <td class="col-type col-varchar">TEXT NOT NULL</td>
+              <td class="col-note">FAQ Question</td>
+            </tr>
+            <tr>
+              <td class="col-name">answer</td>
+              <td class="col-type col-varchar">TEXT NOT NULL</td>
+              <td class="col-note">FAQ Answer</td>
+            </tr>
+            <tr>
+              <td class="col-name">sort_order</td>
+              <td class="col-type col-numeric">INT DEFAULT 0</td>
+              <td class="col-note">Order priority</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGE 6: INVENTORY & CUSTOMER GROUP -->
+      <div class="page-break" id="group-inventory"></div>
+      <h2>5. Inventory</h2>
+      <p>Details storage warehouse points and maintains historical logs of stock movements.</p>
+
+      <!-- warehouses -->
+      <h3>warehouses <span class="tag-new">NEW</span></h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">name</td>
+              <td class="col-type col-varchar">VARCHAR(150) NOT NULL</td>
+              <td class="col-note">e.g. 'Main Warehouse'</td>
+            </tr>
+            <tr>
+              <td class="col-name">address</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Warehouse address details</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_active</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT TRUE</td>
+              <td class="col-note">Toggle status</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- inventory_logs -->
+      <h3>inventory_logs <span class="tag-mod">MOD</span></h3>
+      <p>Audit trail of variant stock modifications. FK warehouse link has been added.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">variant_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES product_variants(id)</td>
+              <td class="col-note">FK → variants</td>
+            </tr>
+            <tr>
+              <td class="col-name">warehouse_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES warehouses(id)</td>
+              <td class="col-note">FK → warehouses <span class="tag-mod">MOD</span></td>
+            </tr>
+            <tr>
+              <td class="col-name">type</td>
+              <td class="col-type col-varchar">VARCHAR(30) NOT NULL</td>
+              <td class="col-note">restock / sale / adjustment</td>
+            </tr>
+            <tr>
+              <td class="col-name">qty_change</td>
+              <td class="col-type col-numeric">INT NOT NULL</td>
+              <td class="col-note">+ve restock quantity, -ve order sales</td>
+            </tr>
+            <tr>
+              <td class="col-name">qty_after</td>
+              <td class="col-type col-numeric">INT NOT NULL</td>
+              <td class="col-note">Post-change stock snapshot value</td>
+            </tr>
+            <tr>
+              <td class="col-name">ref_id</td>
+              <td class="col-type col-uuid">UUID</td>
+              <td class="col-note">e.g. order_id or adjustment invoice ID</td>
+            </tr>
+            <tr>
+              <td class="col-name">note</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Comments context</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_by</td>
+              <td class="col-type col-uuid">UUID REFERENCES users(id)</td>
+              <td class="col-note">Admin operator user ID</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="page-break" id="group-customer"></div>
+      <h2>6. Customer</h2>
+      <p>Registered and guest checkout records along with address locations.</p>
+
+      <!-- customers -->
+      <h3>customers <span class="tag-mod">MOD</span></h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">name</td>
+              <td class="col-type col-varchar">VARCHAR(150)</td>
+              <td class="col-note">Customer name</td>
+            </tr>
+            <tr>
+              <td class="col-name">email</td>
+              <td class="col-type col-varchar">VARCHAR(255)</td>
+              <td class="col-note">Unique per shop if registered</td>
+            </tr>
+            <tr>
+              <td class="col-name">phone</td>
+              <td class="col-type col-varchar">VARCHAR(30)</td>
+              <td class="col-note">Contact number</td>
+            </tr>
+            <tr>
+              <td class="col-name">password_hash</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">NULL for guests checkouts</td>
+            </tr>
+            <tr>
+              <td class="col-name">guest_token</td>
+              <td class="col-type col-varchar">VARCHAR(255) UNIQUE</td>
+              <td class="col-note">Session token for tracking guests</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_verified</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT FALSE</td>
+              <td class="col-note">Verification status trigger</td>
+            </tr>
+            <tr>
+              <td class="col-name">avatar_url</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Profile image URL</td>
+            </tr>
+            <tr>
+              <td class="col-name">total_orders</td>
+              <td class="col-type col-numeric">INT DEFAULT 0</td>
+              <td class="col-note">Order aggregate cache</td>
+            </tr>
+            <tr>
+              <td class="col-name">total_spent</td>
+              <td class="col-type col-numeric">NUMERIC(14,2) DEFAULT 0</td>
+              <td class="col-note">Revenue aggregate cache</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Registration date</td>
+            </tr>
+            <tr>
+              <td class="col-name">updated_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Modification date</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- addresses -->
+      <h3>addresses</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">customer_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES customers(id)</td>
+              <td class="col-note">FK → customers (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">type</td>
+              <td class="col-type col-varchar">VARCHAR(20) DEFAULT 'shipping'</td>
+              <td class="col-note">shipping / billing</td>
+            </tr>
+            <tr>
+              <td class="col-name">full_name</td>
+              <td class="col-type col-varchar">VARCHAR(150) NOT NULL</td>
+              <td class="col-note">Recipient name</td>
+            </tr>
+            <tr>
+              <td class="col-name">phone</td>
+              <td class="col-type col-varchar">VARCHAR(30)</td>
+              <td class="col-note">Contact number</td>
+            </tr>
+            <tr>
+              <td class="col-name">address_line1</td>
+              <td class="col-type col-varchar">TEXT NOT NULL</td>
+              <td class="col-note">Street address info</td>
+            </tr>
+            <tr>
+              <td class="col-name">address_line2</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Suite/Apartment details</td>
+            </tr>
+            <tr>
+              <td class="col-name">city</td>
+              <td class="col-type col-varchar">VARCHAR(100) NOT NULL</td>
+              <td class="col-note">City locator</td>
+            </tr>
+            <tr>
+              <td class="col-name">state</td>
+              <td class="col-type col-varchar">VARCHAR(100)</td>
+              <td class="col-note">State / Province</td>
+            </tr>
+            <tr>
+              <td class="col-name">postal_code</td>
+              <td class="col-type col-varchar">VARCHAR(20)</td>
+              <td class="col-note">Postal PIN Code</td>
+            </tr>
+            <tr>
+              <td class="col-name">country</td>
+              <td class="col-type col-varchar">CHAR(2) DEFAULT 'BD'</td>
+              <td class="col-note">ISO 3166-1 alpha-2 code (e.g. IN / BD)</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_default</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT FALSE</td>
+              <td class="col-note">Primary checkout address selection</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGE 7: CART & ORDER GROUP -->
+      <div class="page-break" id="group-order"></div>
+      <h2>7. Cart &amp; Order</h2>
+      <p>Manages active cart lines, persistent checkout records, shipping rates, and promotional coupons.</p>
+
+      <!-- carts -->
+      <h3>carts</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">customer_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES customers(id)</td>
+              <td class="col-note">FK → customers (NULL for guest carts)</td>
+            </tr>
+            <tr>
+              <td class="col-name">session_id</td>
+              <td class="col-type col-varchar">VARCHAR(255) UNIQUE</td>
+              <td class="col-note">Token for tracking guest shopping sessions</td>
+            </tr>
+            <tr>
+              <td class="col-name">coupon_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES coupons(id)</td>
+              <td class="col-note">FK → coupons</td>
+            </tr>
+            <tr>
+              <td class="col-name">expires_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ</td>
+              <td class="col-note">Expiry timestamp</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+            <tr>
+              <td class="col-name">updated_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Modification timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- cart_items -->
+      <h3>cart_items</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">cart_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES carts(id)</td>
+              <td class="col-note">FK → carts (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">variant_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES product_variants(id)</td>
+              <td class="col-note">FK → variants</td>
+            </tr>
+            <tr>
+              <td class="col-name">qty</td>
+              <td class="col-type col-numeric">INT NOT NULL DEFAULT 1</td>
+              <td class="col-note">CHECK (qty &gt; 0)</td>
+            </tr>
+            <tr>
+              <td class="col-name">unit_price</td>
+              <td class="col-type col-numeric">NUMERIC(12,2) NOT NULL</td>
+              <td class="col-note">Price at timestamp of add-to-cart</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- orders -->
+      <h3>orders</h3>
+      <p>Defines final placed orders. Holds static snapshots of user data at checkout time.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">customer_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES customers(id)</td>
+              <td class="col-note">FK → customers</td>
+            </tr>
+            <tr>
+              <td class="col-name">order_number</td>
+              <td class="col-type col-varchar">VARCHAR(30) UNIQUE NOT NULL</td>
+              <td class="col-note">Human readable reference identifier</td>
+            </tr>
+            <tr>
+              <td class="col-name">status</td>
+              <td class="col-type col-varchar">VARCHAR(30) DEFAULT 'pending'</td>
+              <td class="col-note">pending / confirmed / shipped / cancelled</td>
+            </tr>
+            <tr>
+              <td class="col-name">subtotal</td>
+              <td class="col-type col-numeric">NUMERIC(12,2) NOT NULL</td>
+              <td class="col-note">Items sum total price</td>
+            </tr>
+            <tr>
+              <td class="col-name">discount_amount</td>
+              <td class="col-type col-numeric">NUMERIC(12,2) DEFAULT 0</td>
+              <td class="col-note">Voucher coupon reduction</td>
+            </tr>
+            <tr>
+              <td class="col-name">shipping_amount</td>
+              <td class="col-type col-numeric">NUMERIC(12,2) DEFAULT 0</td>
+              <td class="col-note">Delivery cost parameters</td>
+            </tr>
+            <tr>
+              <td class="col-name">tax_amount</td>
+              <td class="col-type col-numeric">NUMERIC(12,2) DEFAULT 0</td>
+              <td class="col-note">GST / Tax aggregate sum</td>
+            </tr>
+            <tr>
+              <td class="col-name">total</td>
+              <td class="col-type col-numeric">NUMERIC(12,2) NOT NULL</td>
+              <td class="col-note">Final checkout amount</td>
+            </tr>
+            <tr>
+              <td class="col-name">coupon_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES coupons(id)</td>
+              <td class="col-note">Voucher reference key</td>
+            </tr>
+            <tr>
+              <td class="col-name">shipping_rate_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shipping_rates(id)</td>
+              <td class="col-note">FK → shipping_rates</td>
+            </tr>
+            <tr>
+              <td class="col-name">shipping_address</td>
+              <td class="col-type col-json">JSONB NOT NULL</td>
+              <td class="col-note">Static Snapshot of address at checkout</td>
+            </tr>
+            <tr>
+              <td class="col-name">billing_address</td>
+              <td class="col-type col-json">JSONB</td>
+              <td class="col-note">Static billing address details</td>
+            </tr>
+            <tr>
+              <td class="col-name">notes</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Customer order comments</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Insertion date</td>
+            </tr>
+            <tr>
+              <td class="col-name">updated_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Last modifications update</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- order_items -->
+      <h3>order_items</h3>
+      <p>Line items within an order. Implements static snapshot parameters to guarantee historic price accuracy.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PRIMARY KEY</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">order_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES orders(id)</td>
+              <td class="col-note">FK → orders (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">variant_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES product_variants(id)</td>
+              <td class="col-note">FK → variants</td>
+            </tr>
+            <tr>
+              <td class="col-name">product_snap</td>
+              <td class="col-type col-json">JSONB NOT NULL</td>
+              <td class="col-note">Snapshot: Title, SKU, image (Guarantees data integrity)</td>
+            </tr>
+            <tr>
+              <td class="col-name">qty</td>
+              <td class="col-type col-numeric">INT NOT NULL</td>
+              <td class="col-note">Items quantity</td>
+            </tr>
+            <tr>
+              <td class="col-name">unit_price</td>
+              <td class="col-type col-numeric">NUMERIC(12,2) NOT NULL</td>
+              <td class="col-note">Purchase price unit</td>
+            </tr>
+            <tr>
+              <td class="col-name">line_total</td>
+              <td class="col-type col-numeric">NUMERIC(12,2) NOT NULL</td>
+              <td class="col-note">Subtotal line item</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- order_status_logs -->
+      <h3>order_status_logs <span class="tag-new">NEW</span></h3>
+      <p>State transition history record mapping changes in order tracking.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">order_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES orders(id)</td>
+              <td class="col-note">FK → orders (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">from_status</td>
+              <td class="col-type col-varchar">VARCHAR(30) NULL</td>
+              <td class="col-note">Previous state (NULL for first entry)</td>
+            </tr>
+            <tr>
+              <td class="col-name">to_status</td>
+              <td class="col-type col-varchar">VARCHAR(30) NOT NULL</td>
+              <td class="col-note">Target new state status</td>
+            </tr>
+            <tr>
+              <td class="col-name">note</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Change details notes context</td>
+            </tr>
+            <tr>
+              <td class="col-name">changed_by</td>
+              <td class="col-type col-uuid">UUID REFERENCES users(id)</td>
+              <td class="col-note">FK → users (Operator user account ID)</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Log entry timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- shipping_rates -->
+      <h3>shipping_rates <span class="tag-new">NEW</span></h3>
+      <p>Logistical delivery zoning cost mapping parameters.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">name</td>
+              <td class="col-type col-varchar">VARCHAR(150) NOT NULL</td>
+              <td class="col-note">e.g. 'Inside Delhi/Mumbai'</td>
+            </tr>
+            <tr>
+              <td class="col-name">rate</td>
+              <td class="col-type col-numeric">NUMERIC(10,2) NOT NULL</td>
+              <td class="col-note">Flat delivery fee</td>
+            </tr>
+            <tr>
+              <td class="col-name">free_above</td>
+              <td class="col-type col-numeric">NUMERIC(10,2) DEFAULT 0</td>
+              <td class="col-note">Free delivery threshold value</td>
+            </tr>
+            <tr>
+              <td class="col-name">zone_label</td>
+              <td class="col-type col-varchar">VARCHAR(100)</td>
+              <td class="col-note">Zoning geographical title</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_active</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT TRUE</td>
+              <td class="col-note">Enable status parameter</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- coupons -->
+      <h3>coupons</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">code</td>
+              <td class="col-type col-varchar">VARCHAR(60) NOT NULL</td>
+              <td class="col-note">Unique with shop_id coupon code</td>
+            </tr>
+            <tr>
+              <td class="col-name">type</td>
+              <td class="col-type col-varchar">VARCHAR(20) NOT NULL</td>
+              <td class="col-note">percent / fixed / free_shipping</td>
+            </tr>
+            <tr>
+              <td class="col-name">value</td>
+              <td class="col-type col-numeric">NUMERIC(10,2) NOT NULL</td>
+              <td class="col-note">Discount value parameter</td>
+            </tr>
+            <tr>
+              <td class="col-name">min_order</td>
+              <td class="col-type col-numeric">NUMERIC(10,2) DEFAULT 0</td>
+              <td class="col-note">Minimum checkout threshold</td>
+            </tr>
+            <tr>
+              <td class="col-name">usage_limit</td>
+              <td class="col-type col-numeric">INT</td>
+              <td class="col-note">Global usage threshold (NULL = unlimited)</td>
+            </tr>
+            <tr>
+              <td class="col-name">used_count</td>
+              <td class="col-type col-numeric">INT DEFAULT 0</td>
+              <td class="col-note">Current usage counter</td>
+            </tr>
+            <tr>
+              <td class="col-name">starts_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ</td>
+              <td class="col-note">Start validity</td>
+            </tr>
+            <tr>
+              <td class="col-name">ends_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ</td>
+              <td class="col-note">Expiration date</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_active</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT TRUE</td>
+              <td class="col-note">Status status</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation date</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGE 8: PAYMENT & CONTENT GROUP -->
+      <div class="page-break" id="group-payment"></div>
+      <h2>8. Payment</h2>
+      <p>Integrates gateway profiles, keeps transaction records, and defines tax levels.</p>
+
+      <!-- payment_gateways -->
+      <h3>payment_gateways</h3>
+      <p>Payment setups. For India, focuses on Razorpay configurations alongside Cash on Delivery.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">name</td>
+              <td class="col-type col-varchar">VARCHAR(100) NOT NULL</td>
+              <td class="col-note">e.g. 'Razorpay' / 'COD'</td>
+            </tr>
+            <tr>
+              <td class="col-name">slug</td>
+              <td class="col-type col-varchar">VARCHAR(60) NOT NULL</td>
+              <td class="col-note">e.g. 'razorpay' / 'cod'</td>
+            </tr>
+            <tr>
+              <td class="col-name">config</td>
+              <td class="col-type col-json">JSONB DEFAULT '{}'</td>
+              <td class="col-note">API key structures, encrypted at rest</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_active</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT TRUE</td>
+              <td class="col-note">Enable / disable toggle status</td>
+            </tr>
+            <tr>
+              <td class="col-name">sort_order</td>
+              <td class="col-type col-numeric">INT DEFAULT 0</td>
+              <td class="col-note">Listing sequence sorting</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation date</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- payments -->
+      <h3>payments</h3>
+      <p>Financial ledger keeping records of checkout attempts and Razorpay gateway webhooks.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">order_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES orders(id)</td>
+              <td class="col-note">FK → orders</td>
+            </tr>
+            <tr>
+              <td class="col-name">gateway_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES payment_gateways(id)</td>
+              <td class="col-note">FK → gateways</td>
+            </tr>
+            <tr>
+              <td class="col-name">amount</td>
+              <td class="col-type col-numeric">NUMERIC(12,2) NOT NULL</td>
+              <td class="col-note">Charged amount</td>
+            </tr>
+            <tr>
+              <td class="col-name">currency</td>
+              <td class="col-type col-varchar">CHAR(3) DEFAULT 'INR'</td>
+              <td class="col-note">Payment currency code</td>
+            </tr>
+            <tr>
+              <td class="col-name">status</td>
+              <td class="col-type col-varchar">VARCHAR(30) DEFAULT 'pending'</td>
+              <td class="col-note">pending / paid / failed / refunded</td>
+            </tr>
+            <tr>
+              <td class="col-name">transaction_id</td>
+              <td class="col-type col-varchar">VARCHAR(255) UNIQUE</td>
+              <td class="col-note">External Razorpay checkout ID</td>
+            </tr>
+            <tr>
+              <td class="col-name">gateway_resp</td>
+              <td class="col-type col-json">JSONB DEFAULT '{}'</td>
+              <td class="col-note">Raw response callback json</td>
+            </tr>
+            <tr>
+              <td class="col-name">paid_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ</td>
+              <td class="col-note">Settlement date</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Record created timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- taxes -->
+      <h3>taxes <span class="tag-new">NEW</span></h3>
+      <p>VAT or GST (India) classification parameters.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">name</td>
+              <td class="col-type col-varchar">VARCHAR(100) NOT NULL</td>
+              <td class="col-note">e.g. 'GST 18%' or 'VAT 15%'</td>
+            </tr>
+            <tr>
+              <td class="col-name">rate</td>
+              <td class="col-type col-numeric">NUMERIC(5,2) NOT NULL</td>
+              <td class="col-note">18.00 represents 18%</td>
+            </tr>
+            <tr>
+              <td class="col-name">type</td>
+              <td class="col-type col-varchar">VARCHAR(30) DEFAULT 'percent'</td>
+              <td class="col-note">percent / fixed fee type</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_inclusive</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT FALSE</td>
+              <td class="col-note">Inclusive / Exclusive checkout trigger</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_active</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT TRUE</td>
+              <td class="col-note">Status parameter</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGE 9: MARKETING & CONTENT GROUP -->
+      <div class="page-break" id="group-marketing"></div>
+      <h2>9. Content &amp; Marketing</h2>
+      <p>Handles product reviews and automated notifications alerts.</p>
+
+      <!-- reviews -->
+      <h3>reviews</h3>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">product_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES products(id)</td>
+              <td class="col-note">FK → products (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">customer_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES customers(id)</td>
+              <td class="col-note">FK → customers (Log owner account)</td>
+            </tr>
+            <tr>
+              <td class="col-name">rating</td>
+              <td class="col-type col-numeric">SMALLINT NOT NULL</td>
+              <td class="col-note">CHECK (rating BETWEEN 1 AND 5)</td>
+            </tr>
+            <tr>
+              <td class="col-name">title</td>
+              <td class="col-type col-varchar">VARCHAR(200)</td>
+              <td class="col-note">Review header</td>
+            </tr>
+            <tr>
+              <td class="col-name">body</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Review description details</td>
+            </tr>
+            <tr>
+              <td class="col-name">status</td>
+              <td class="col-type col-varchar">VARCHAR(20) DEFAULT 'pending'</td>
+              <td class="col-note">pending / approved / rejected</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- notifications -->
+      <h3>notifications <span class="tag-new">NEW</span></h3>
+      <p>Automated SMS and email checkout alerts sent to buyers.</p>
+      <div class="schema-table-wrapper">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type / Constraint</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">id</td>
+              <td class="col-type col-uuid">UUID PK</td>
+              <td class="col-note">DEFAULT gen_random_uuid()</td>
+            </tr>
+            <tr>
+              <td class="col-name">shop_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES shops(id)</td>
+              <td class="col-note">FK → shops (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">customer_id</td>
+              <td class="col-type col-uuid">UUID REFERENCES customers(id)</td>
+              <td class="col-note">FK → customers (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+              <td class="col-name">type</td>
+              <td class="col-type col-varchar">VARCHAR(60) NOT NULL</td>
+              <td class="col-note">order_confirmed / shipped / refund_processed</td>
+            </tr>
+            <tr>
+              <td class="col-name">title</td>
+              <td class="col-type col-varchar">VARCHAR(255) NOT NULL</td>
+              <td class="col-note">Alert header text</td>
+            </tr>
+            <tr>
+              <td class="col-name">body</td>
+              <td class="col-type col-varchar">TEXT</td>
+              <td class="col-note">Alert message content</td>
+            </tr>
+            <tr>
+              <td class="col-name">is_read</td>
+              <td class="col-type col-boolean">BOOLEAN DEFAULT FALSE</td>
+              <td class="col-note">Read status flag</td>
+            </tr>
+            <tr>
+              <td class="col-name">ref_id</td>
+              <td class="col-type col-uuid">UUID</td>
+              <td class="col-note">Link to order_id or NULL</td>
+            </tr>
+            <tr>
+              <td class="col-name">created_at</td>
+              <td class="col-type col-time">TIMESTAMPTZ DEFAULT NOW()</td>
+              <td class="col-note">Creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGE 10: INDEXES & PERFORMANCE -->
+      <div class="page-break" id="section-indexes"></div>
+      <h2>10. Indexes &amp; Performance</h2>
+      <p>
+        Every query in a multi-tenant system must be prefixed by <code>shop_id</code>. The 16 indexes below ensure PostgreSQL never performs a full table scan, maintaining sub-millisecond response times even at high transaction volumes.
+      </p>
+
+      <table class="index-table">
+        <thead>
+          <tr>
+            <th>Index Name</th>
+            <th>On Table &amp; Columns</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="idx-name">idx_products_shop</td>
+            <td class="idx-target">products(shop_id)</td>
+            <td>Multi-tenancy catalog lookup</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_orders_shop</td>
+            <td class="idx-target">orders(shop_id)</td>
+            <td>Multi-tenancy sales lookup</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_customers_shop</td>
+            <td class="idx-target">customers(shop_id)</td>
+            <td>Multi-tenancy buyer lookup</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_variants_product</td>
+            <td class="idx-target">product_variants(product_id)</td>
+            <td>Loads SKUs for specific product catalog page</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_variants_sku</td>
+            <td class="idx-target">product_variants(sku)</td>
+            <td>Product scanning/SKU lookups</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_cart_items_cart</td>
+            <td class="idx-target">cart_items(cart_id)</td>
+            <td>Retrieve lines within active cart session</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_order_items_order</td>
+            <td class="idx-target">order_items(order_id)</td>
+            <td>Line item lookups for invoices</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_payments_order</td>
+            <td class="idx-target">payments(order_id)</td>
+            <td>Gateway response webhook mapping link</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_inventory_variant</td>
+            <td class="idx-target">inventory_logs(variant_id)</td>
+            <td>Stock ledger adjustments tracking</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_reviews_product</td>
+            <td class="idx-target">reviews(product_id)</td>
+            <td>Fetch star ratings for product pages</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_notifications_cust</td>
+            <td class="idx-target">notifications(customer_id, is_read)</td>
+            <td>Query unread alerts for inbox</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_activity_shop_time</td>
+            <td class="idx-target">activity_logs(shop_id, created_at DESC)</td>
+            <td>Admin action chronological audit logs</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_shop_domain</td>
+            <td class="idx-target">shop_domains(domain) <span class="tag-new">UNIQUE</span></td>
+            <td>Every web request mapping — crucial for multi-tenant routing</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_order_number</td>
+            <td class="idx-target">orders(shop_id, order_number) <span class="tag-new">UNIQUE</span></td>
+            <td>Customer-facing invoice lookup filter</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_cart_session</td>
+            <td class="idx-target">carts(session_id) <span class="tag-new">PARTIAL</span></td>
+            <td>WHERE session_id IS NOT NULL (Guest cart lookups)</td>
+          </tr>
+          <tr>
+            <td class="idx-name">idx_variant_stock</td>
+            <td class="idx-target">product_variants(shop_id, stock_qty) <span class="tag-new">PARTIAL</span></td>
+            <td>WHERE stock_qty &lt;= low_stock_at (Low-stock dashboard alerts)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- PAGE 11: ENTITY RELATIONSHIPS -->
+      <div class="page-break" id="section-er"></div>
+      <h2>11. Entity Relationships</h2>
+      <p>
+        The database establishes 19 critical foreign key constraints defining data flow across modules.
+      </p>
+
+      <table style="font-size: 0.88rem;">
+        <thead>
+          <tr>
+            <th>From Table</th>
+            <th>To Table</th>
+            <th>Description</th>
+            <th>Cardinality</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>shops</strong></td>
+            <td>users</td>
+            <td>1 shop registers many staff logins</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>shops</strong></td>
+            <td>shop_domains</td>
+            <td>1 shop maps to multiple domain mappings</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>shops</strong></td>
+            <td>products</td>
+            <td>1 shop catalog registers many products</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>products</strong></td>
+            <td>product_variants</td>
+            <td>1 product contains many stock variants (SKUs)</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>product_variants</strong></td>
+            <td>variant_attributes</td>
+            <td>1 variant specifies multiple custom attributes (Red, XL)</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>product_variants</strong></td>
+            <td>inventory_logs</td>
+            <td>1 variant maps to historic stock adjustments logs</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>warehouses</strong></td>
+            <td>inventory_logs</td>
+            <td>1 warehouse records multiple stock adjustments</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>customers</strong></td>
+            <td>carts</td>
+            <td>1 buyer customer owns 1 active cart</td>
+            <td>1 : 1</td>
+          </tr>
+          <tr>
+            <td><strong>carts</strong></td>
+            <td>cart_items</td>
+            <td>1 cart lists multiple item lines</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>customers</strong></td>
+            <td>orders</td>
+            <td>1 buyer completes multiple orders</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>orders</strong></td>
+            <td>order_items</td>
+            <td>1 order processes multiple line items</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>orders</strong></td>
+            <td>order_status_logs</td>
+            <td>1 order logs chronological status changes</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>orders</strong></td>
+            <td>payments</td>
+            <td>1 order maps to one or more payment attempts</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>payment_gateways</strong></td>
+            <td>payments</td>
+            <td>1 payment gateway processes multiple transactions</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>products</strong></td>
+            <td>reviews</td>
+            <td>1 product catalog gets multiple reviews</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>customers</strong></td>
+            <td>notifications</td>
+            <td>1 buyer customer receives multiple alerts</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>taxes</strong></td>
+            <td>products</td>
+            <td>1 tax tier applies to multiple catalog products</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>shipping_rates</strong></td>
+            <td>orders</td>
+            <td>1 shipping rate calculates costs for multiple orders</td>
+            <td>1 : N</td>
+          </tr>
+          <tr>
+            <td><strong>coupons</strong></td>
+            <td>orders</td>
+            <td>1 coupon discount tracks multiple checkouts</td>
+            <td>1 : N</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- PAGE 12: KEY DESIGN DECISIONS -->
+      <div class="page-break" id="section-decisions"></div>
+      <h2>12. Key Design Decisions</h2>
+      <p>
+        The architectural features below distinguish OakSol Commerce's database design:
+      </p>
+
+      <div class="decisions-grid">
+        <div class="decision-card">
+          <h4>UUID Primary Keys</h4>
+          <p>
+            All tables use <code>gen_random_uuid()</code>. This guarantees distributed database compatibility, makes offline UUID generation safe, and prevents URL enumeration attacks.
+          </p>
+        </div>
+        <div class="decision-card">
+          <h4>Multi-Tenant Isolation</h4>
+          <p>
+            Every tenant table contains a <code>shop_id</code> foreign key. Access pipelines query using explicit tenant IDs, ensuring zero possibility of cross-tenant data leaks.
+          </p>
+        </div>
+        <div class="decision-card">
+          <h4>Custom Domain Routing</h4>
+          <p>
+            The <code>shop_domains</code> table stores subdomains and custom domains. The middleware maps incoming hostnames to corresponding <code>shop_id</code> root entries in sub-milliseconds.
+          </p>
+        </div>
+        <div class="decision-card">
+          <h4>Audit Log Trail</h4>
+          <p>
+            The <code>inventory_logs</code> and <code>activity_logs</code> tables track every stock adjustment and dashboard modification, ensuring full accountability.
+          </p>
+        </div>
+      </div>
+
+      <div class="decisions-grid" style="margin-top: 0;">
+        <div class="decision-card">
+          <h4>Order Snapshot Pattern</h4>
+          <p>
+            To prevent historical records from breaking when products change, <code>order_items.product_snap</code> caches product details as JSONB at purchase time.
+          </p>
+        </div>
+        <div class="decision-card">
+          <h4>Address Snapshotting</h4>
+          <p>
+            Similarly, <code>orders.shipping_address</code> stores shipping addresses as JSONB. Customers can modify their profile addresses without breaking historical order details.
+          </p>
+        </div>
+        <div class="decision-card">
+          <h4>Guest Session Lifecycle</h4>
+          <p>
+            Using <code>customers.guest_token</code> and <code>carts.session_id</code>, shoppers can complete guest checkouts. These guest records can easily merge with new accounts later.
+          </p>
+        </div>
+        <div class="decision-card">
+          <h4>TimeZone Compliance</h4>
+          <p>
+            All timestamps use <code>TIMESTAMPTZ</code>. This ensures accurate tracking across international regions and accounts for Daylight Saving Time (DST).
+          </p>
+        </div>
+      </div>
+
+      <div class="callout" style="border-left-color: #ef4444; background: rgba(239, 68, 68, 0.02);">
+        <p>
+          <strong>Soft Delete Policy:</strong> To maintain historical integrity and prevent database constraint issues, the platform utilizes status codes (such as active, archived, suspended, draft) instead of hard deletes.
+        </p>
+      </div>
+
+      <p style="text-align: center; margin-top: 3rem; font-size: 0.85rem; letter-spacing: 0.05em; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+        CONFIDENTIAL — FOR INTERNAL USE ONLY — OAKSOL COMMERCE DATABASE ARCHITECTURE v1.0
+      </p>
+
+    </div>
+  </div>
+
+  <script>
+    // Theme toggle script
+    const themeBtn = document.getElementById('theme-toggle');
+    themeBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      if (currentTheme === 'dark') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    });
+
+    // Simple scroll highlighting for sidebar
+    const sections = document.querySelectorAll('h2, .page-break');
+    const menuLinks = document.querySelectorAll('.sidebar-menu a');
+
+    window.addEventListener('scroll', () => {
+      let currentId = '';
+      sections.forEach(sec => {
+        const top = sec.offsetTop - 80;
+        if (window.scrollY >= top) {
+          currentId = sec.getAttribute('id') || currentId;
+        }
+      });
+      menuLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + currentId) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

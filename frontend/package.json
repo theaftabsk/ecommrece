@@ -1,0 +1,23 @@
+{
+  "name": "oaksol-commerce-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:landing\" \"npm run dev:storefront\" \"npm run dev:admin\" \"npm run dev:merchant\"",
+    "dev:landing": "npm run dev --workspace=apps/landing-page",
+    "dev:storefront": "npm run dev --workspace=apps/storefront",
+    "dev:admin": "npm run dev --workspace=apps/admin-dashboard",
+    "dev:merchant": "npm run dev --workspace=apps/merchant-dashboard",
+    "build:all": "npm run build --workspace=apps/landing-page && npm run build --workspace=apps/storefront && npm run build --workspace=apps/admin-dashboard",
+    "build:storefront": "npm run build --workspace=apps/storefront",
+    "build:admin": "npm run build --workspace=apps/admin-dashboard",
+    "build:landing": "npm run build --workspace=apps/landing-page"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}

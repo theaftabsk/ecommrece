@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OakSol Commerce - Business Plan (Phase 1)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --border-color: #e2e8f0;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0b0f19;
+      --card-bg: #111827;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #f3f4f6;
+      --accent: #3b82f6;
+      --border-color: #1f2937;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Toolbar for interactive viewing */
+    .no-print-toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+      z-index: 1000;
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      color: var(--text-main);
+    }
+
+    .btn:hover {
+      background: var(--border-color);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    /* Document Wrapper */
+    .document-container {
+      max-width: 900px;
+      margin: 90px auto 50px auto;
+      background: var(--card-bg);
+      padding: 4.5rem;
+      box-shadow: var(--shadow-lg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4 {
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.85rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .sec-num {
+      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+      color: var(--accent);
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-top: 1.75rem;
+      color: var(--text-main);
+    }
+
+    h4 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    p {
+      margin-bottom: 1.2rem;
+      color: var(--text-muted);
+      font-size: 0.975rem;
+      text-align: justify;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin-bottom: 1.2rem;
+      padding-left: 1.5rem;
+      color: var(--text-muted);
+    }
+
+    li {
+      margin-bottom: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    /* Cover Page styling */
+    .cover-page {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 680px;
+      padding-bottom: 2rem;
+    }
+
+    .cover-header {
+      margin-top: 3rem;
+    }
+
+    .cover-logo {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .cover-logo span {
+      color: var(--accent);
+    }
+
+    .cover-title {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      line-height: 1.1;
+    }
+
+    .cover-subtitle {
+      font-size: 1.35rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      font-weight: 300;
+      margin-bottom: 1.5rem;
+    }
+
+    .cover-meta {
+      border-top: 1px solid var(--border-color);
+      padding-top: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .meta-item span {
+      display: block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .meta-item p {
+      font-weight: 600;
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    /* Page Breaks */
+    .page-break {
+      page-break-before: always;
+      margin-top: 4rem;
+    }
+
+    /* Callout Boxes */
+    .callout {
+      background-color: var(--bg-color);
+      border-left: 4px solid var(--accent);
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .callout p {
+      margin: 0;
+      font-size: 0.95rem;
+      text-align: left;
+    }
+
+    /* Diagram Styling */
+    .flow-diagram-container {
+      margin: 2rem 0;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .diagram-step {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.85rem 1.5rem;
+      text-align: center;
+      width: 320px;
+      box-shadow: var(--shadow);
+    }
+
+    .diagram-step-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .diagram-step-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .diagram-arrow {
+      height: 25px;
+      width: 2px;
+      background: var(--border-color);
+      position: relative;
+      margin: 0.35rem 0;
+    }
+
+    .diagram-arrow::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 5px 4px 0 4px;
+      border-style: solid;
+      border-color: var(--border-color) transparent transparent transparent;
+    }
+
+    /* Visual Blocks for Scalability section */
+    .visual-block-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin: 2rem 0;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 2rem;
+    }
+
+    .visual-flex {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .parent-node {
+      border: 2px solid var(--text-main);
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      font-weight: 700;
+      width: 180px;
+      box-shadow: var(--shadow);
+    }
+
+    .child-node-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      max-width: 480px;
+    }
+
+    .child-badge {
+      font-size: 0.75rem;
+      font-family: monospace;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: var(--card-bg);
+      text-align: center;
+    }
+
+    .child-badge.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Columns / Grids */
+    .features-grid-3, .features-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin: 1.5rem 0;
+    }
+
+    .feature-card {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: var(--card-bg);
+    }
+
+    .feature-card h4 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.4rem;
+    }
+
+    .feature-card ul {
+      list-style-type: none;
+      padding-left: 0;
+      margin-bottom: 0;
+    }
+
+    .feature-card li {
+      font-size: 0.85rem;
+      position: relative;
+      padding-left: 0.75rem;
+      margin-bottom: 0.35rem;
+      color: var(--text-muted);
+    }
+
+    .feature-card li::before {
+      content: "•";
+      color: var(--accent);
+      position: absolute;
+      left: 0;
+      font-weight: bold;
+    }
+
+    /* Database Table Layouts */
+    .db-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .db-card {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: var(--bg-color);
+    }
+
+    .db-card h4 {
+      font-size: 0.95rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+
+    .db-table-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .db-table-list li {
+      font-size: 0.88rem;
+      margin-bottom: 0.4rem;
+      border-bottom: 1px dashed var(--border-color);
+      padding-bottom: 0.25rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .db-table-name {
+      font-family: monospace;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .db-table-desc {
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 0.75rem 1rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(0, 0, 0, 0.01);
+    }
+
+    /* Print styles */
+    @media print {
+      body {
+        background-color: #ffffff;
+        color: #000000;
+      }
+
+      .no-print-toolbar {
+        display: none;
+      }
+
+      .document-container {
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+        max-width: 100%;
+      }
+
+      .page-break {
+        page-break-before: always;
+        margin-top: 0;
+        padding-top: 1.5rem;
+      }
+
+      .diagram-step, .feature-card, .callout, .db-card, .parent-node, .child-badge, .visual-block-container {
+        border: 1px solid #000000 !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+
+      .diagram-arrow {
+        background: #000000 !important;
+      }
+      
+      .diagram-arrow::after {
+        border-color: #000000 transparent transparent transparent !important;
+      }
+
+      th {
+        background-color: #f1f5f9 !important;
+        color: #000000 !important;
+        border: 1px solid #000000 !important;
+      }
+
+      td {
+        border: 1px solid #000000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Toolbar -->
+  <div class="no-print-toolbar">
+    <div class="toolbar-title">OakSol Commerce — Phase 1 Business Plan</div>
+    <div class="toolbar-actions">
+      <button class="btn" id="theme-toggle">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
+        </svg>
+        Toggle Theme
+      </button>
+      <button class="btn btn-primary" onclick="window.print()">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+          <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+        </svg>
+        Print / Save as PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Document Container -->
+  <div class="document-container">
+    
+    <!-- COVER PAGE -->
+    <div class="cover-page">
+      <div class="cover-logo">
+        OakSol <span>Commerce</span>
+      </div>
+      
+      <div class="cover-header">
+        <h1 class="cover-title">Business Plan — Phase 1</h1>
+        <p class="cover-subtitle" style="font-size: 1.25rem;">E-Commerce Platform · India Market · Single Store Launch</p>
+      </div>
+
+      <div class="cover-meta">
+        <div class="meta-item">
+          <span>Prepared By</span>
+          <p>Aftab</p>
+        </div>
+        <div class="meta-item">
+          <span>Date</span>
+          <p>June 2026</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: PLATFORM FLOW & SYSTEM OPERATIONS -->
+    <div class="page-break"></div>
+    
+    <h2><span class="sec-num">01</span> Platform Flow — Top to Bottom</h2>
+    
+    <div class="flow-diagram-container">
+      <div class="diagram-step" style="border-left: 4px solid var(--accent);">
+        <div class="diagram-step-title">OakSol Commerce Platform</div>
+        <div class="diagram-step-desc">The core hosting infrastructure &amp; database engine</div>
+      </div>
+      
+      <div class="diagram-arrow"></div>
+
+      <div class="diagram-step">
+        <div class="diagram-step-title">Admin Dashboard</div>
+        <div class="diagram-step-desc">Manage products, verify payments &amp; process orders</div>
+      </div>
+
+      <div class="diagram-arrow"></div>
+
+      <div class="diagram-step">
+        <div class="diagram-step-title">Store Website</div>
+        <div class="diagram-step-desc">Customer checkout catalog (yourdomain.com / shop.oaksolcommerce.in)</div>
+      </div>
+
+      <div class="diagram-arrow"></div>
+
+      <div class="diagram-step" style="background: var(--accent); color: #fff;">
+        <div class="diagram-step-title" style="color: #fff;">Customer</div>
+        <div class="diagram-step-desc" style="color: rgba(255,255,255,0.85);">Place orders &amp; pay securely via Razorpay</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p>
+        OakSol Commerce is a single platform. Admin controls everything from the top. Customers shop from the bottom. One backend, one database — clean and simple.
+      </p>
+    </div>
+
+    <h2><span class="sec-num">02</span> How the System Works — Detailed Page Architecture</h2>
+    
+    <h3>Layer 1 — Admin Dashboard Pages (Merchant Operations)</h3>
+    <p>
+      The Admin Panel is divided into 9 functional pages and editors, giving merchants complete control over products, orders, and system configurations.
+    </p>
+
+    <table style="margin-top: 1rem; font-size: 0.88rem;">
+      <thead>
+        <tr>
+          <th style="width: 25%;">Dashboard Page</th>
+          <th style="width: 50%;">Features &amp; Operations</th>
+          <th>Linked Database Tables</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. Staff Login Page</strong></td>
+          <td>Secure email/password entry, signs Admin JWT, handles session authorizations.</td>
+          <td><code>users</code></td>
+        </tr>
+        <tr>
+          <td><strong>2. Analytics Overview</strong></td>
+          <td>Charts GMV, order volume, recent payments, and lists low-stock item warning alerts.</td>
+          <td><code>orders</code>, <code>product_variants</code>, <code>payments</code></td>
+        </tr>
+        <tr>
+          <td><strong>3. Product List Page</strong></td>
+          <td>Filters catalog items, search by name/SKU, toggle Active/Draft state to instantly hide/show on website.</td>
+          <td><code>products</code>, <code>categories</code>, <code>brands</code></td>
+        </tr>
+        <tr>
+          <td><strong>4. Product Editor Form</strong></td>
+          <td>Configure description, upload images, manage 20+ variants (SKU, price, stock per variant), write SEO metadata, FAQs.</td>
+          <td><code>products</code>, <code>product_variants</code>, <code>product_gallery</code>, <code>product_faqs</code></td>
+        </tr>
+        <tr>
+          <td><strong>5. Categories &amp; Brands</strong></td>
+          <td>Build self-referential subcategory trees, upload brand logo banners, toggle display status.</td>
+          <td><code>categories</code>, <code>brands</code></td>
+        </tr>
+        <tr>
+          <td><strong>6. Inventory &amp; Warehouses</strong></td>
+          <td>Register warehouse spots, view atomic stock audit logs (sales deductions / manual adjustments).</td>
+          <td><code>warehouses</code>, <code>inventory_logs</code></td>
+        </tr>
+        <tr>
+          <td><strong>7. Orders Hub (List &amp; Details)</strong></td>
+          <td>Track order flows, update states: <em>Pending → Confirmed → Shipped → Delivered</em>, view logs.</td>
+          <td><code>orders</code>, <code>order_items</code>, <code>order_status_logs</code></td>
+        </tr>
+        <tr>
+          <td><strong>8. Coupons &amp; Shipping Rates</strong></td>
+          <td>Create promo codes (limits, usage counts, dates), set flat delivery fees per zone.</td>
+          <td><code>coupons</code>, <code>shipping_rates</code></td>
+        </tr>
+        <tr>
+          <td><strong>9. Settings &amp; Domains</strong></td>
+          <td>Set shop metadata, connect custom domains, save encrypted Razorpay API keys (UPI/Cards).</td>
+          <td><code>settings</code>, <code>shop_domains</code>, <code>payment_gateways</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top: 2rem;">Layer 2 — Storefront Website Pages (Customer Checkout Journey)</h3>
+    <p>
+      The end-user store contains 6 optimized checkout pages designed to maximize transaction conversion.
+    </p>
+
+    <table style="margin-top: 1rem; font-size: 0.88rem;">
+      <thead>
+        <tr>
+          <th style="width: 25%;">Storefront Page</th>
+          <th style="width: 50%;">Features &amp; Operations</th>
+          <th>Linked Database Tables</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. Homepage</strong></td>
+          <td>Features active sliding banners, promotional banner blocks, and dynamic product sections (e.g., Best Sellers, New Arrivals) loaded in customer-preferred order. Banners are fetched dynamically per store.</td>
+          <td><code>banners</code>, <code>product_sections</code>, <code>products</code></td>
+        </tr>
+        <tr>
+          <td><strong>2. Catalog Browser</strong></td>
+          <td>Search catalog, filter by price range, category tags, brands; sort dynamically.</td>
+          <td><code>products</code>, <code>categories</code>, <code>brands</code></td>
+        </tr>
+        <tr>
+          <td><strong>3. Product Details Page</strong></td>
+          <td>Select variants (real-time price & stock updates), scroll image gallery, check expandable FAQs, view star reviews, and see detailed product tabs (Key Benefits, Active Ingredients, Ideal Usage, How to Use steps). Also displays related products from the same category.</td>
+          <td><code>products</code>, <code>product_variants</code>, <code>product_gallery</code>, <code>product_faqs</code>, <code>reviews</code></td>
+        </tr>
+        <tr>
+          <td><strong>4. Cart Drawer / Page</strong></td>
+          <td>Review order list, modify item quantities, apply promo coupon codes to deduct cart total.</td>
+          <td><code>carts</code>, <code>cart_items</code>, <code>coupons</code></td>
+        </tr>
+        <tr>
+          <td><strong>5. Checkout Page</strong></td>
+          <td>Enters delivery addresses, chooses shipping zone, initiates Razorpay payment checkout pop-up.</td>
+          <td><code>addresses</code>, <code>orders</code>, <code>order_items</code>, <code>payments</code></td>
+        </tr>
+        <tr>
+          <td><strong>6. Order Success &amp; Tracking</strong></td>
+          <td>Presents order invoice summary and tracks shipping updates: <em>Confirmed → Shipped → Delivered</em>.</td>
+          <td><code>orders</code>, <code>order_status_logs</code>, <code>notifications</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+
+    <!-- PAGE 3: PRODUCT PAGE & DATABASE SCHEMAS -->
+    <div class="page-break"></div>
+
+    <h2><span class="sec-num">03</span> Product Page — What Admin Can Manage</h2>
+    <div class="features-grid-4">
+      <div class="feature-card">
+        <h4>Basic Info</h4>
+        <ul>
+          <li>Product name</li>
+          <li>Full description</li>
+          <li>Short description</li>
+          <li>Price + compare price</li>
+          <li>Cost price (internal)</li>
+          <li>Master SKU</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <h4>Variants &amp; Stock</h4>
+        <ul>
+          <li>Size / Color variants</li>
+          <li>Price per variant</li>
+          <li>Stock per variant</li>
+          <li>Low stock alert</li>
+          <li>Image per variant</li>
+          <li>On / Off per variant</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <h4>Dynamic Layout Tabs</h4>
+        <ul>
+          <li><strong>Custom Sections:</strong> Dynamic JSON array of tabs (e.g. Size Guide, Materials, Ingredients, Specifications)</li>
+          <li><strong>Universal Support:</strong> Supports Skincare, Fashion, Electronics categories out of the box</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <h4>Settings &amp; QA</h4>
+        <ul>
+          <li>Active / Draft / Archive</li>
+          <li>Featured toggle</li>
+          <li>Category &amp; Brand</li>
+          <li>Tax rate &amp; GST configuration</li>
+          <li>SEO title &amp; description</li>
+          <li>Product Q&amp;A (FAQ) list</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout" style="border-left-color: #a855f7;">
+      <div class="callout-title">Variant Scalability &amp; Stock Isolation</div>
+      <p>
+        <strong>High Variant Scalability:</strong> If a product has 20 or more variants, the database maintains each variant as a separate row in the <code>product_variants</code> table with its own SKU, stock count, and price.  
+        <br><strong>Stock Concurrency:</strong> Stock deductions run inside atomic database transactions using PostgreSQL locks. Every deduction triggers an entry in the <code>inventory_logs</code> table. This prevents double-selling (race conditions) during high-traffic flash sales.
+      </p>
+    </div>
+
+    <h2><span class="sec-num">04</span> Database — What Gets Stored</h2>
+    <p>
+      32 tables total. Every piece of data has its own dedicated storage. The system never loses any record — orders, stock changes, and admin actions are all permanently logged.
+    </p>
+
+    <div class="db-grid">
+      <div class="db-card">
+        <h4>Shop &amp; Domain</h4>
+        <ul class="db-table-list">
+          <li><span class="db-table-name">shops</span> <span class="db-table-desc">Store info</span></li>
+          <li><span class="db-table-name">shop_domains</span> <span class="db-table-desc">Website address / custom domain</span></li>
+        </ul>
+
+        <h4 style="margin-top: 1.25rem;">System</h4>
+        <ul class="db-table-list">
+          <li><span class="db-table-name">users</span> <span class="db-table-desc">Admin &amp; staff</span></li>
+          <li><span class="db-table-name">settings</span> <span class="db-table-desc">Config per shop</span></li>
+          <li><span class="db-table-name">activity_logs</span> <span class="db-table-desc">Who did what</span></li>
+        </ul>
+
+        <h4 style="margin-top: 1.25rem;">Inventory</h4>
+        <ul class="db-table-list">
+          <li><span class="db-table-name">warehouses</span> <span class="db-table-desc">Warehouse locations</span></li>
+          <li><span class="db-table-name">inventory_logs</span> <span class="db-table-desc">Every stock change</span></li>
+        </ul>
+
+        <h4 style="margin-top: 1.25rem;">Customer</h4>
+        <ul class="db-table-list">
+          <li><span class="db-table-name">customers</span> <span class="db-table-desc">Buyers (registered + guest)</span></li>
+          <li><span class="db-table-name">addresses</span> <span class="db-table-desc">Shipping &amp; billing</span></li>
+        </ul>
+      </div>
+
+      <div class="db-card">
+        <h4>Product Catalog &amp; Layout</h4>
+        <ul class="db-table-list">
+          <li><span class="db-table-name">products</span> <span class="db-table-desc">Core product (dynamic custom_sections JSON array)</span></li>
+          <li><span class="db-table-name">product_variants</span> <span class="db-table-desc">Size/Color SKUs &amp; atomic stock</span></li>
+          <li><span class="db-table-name">product_gallery</span> <span class="db-table-desc">Multiple image URLs</span></li>
+          <li><span class="db-table-name">variant_attributes</span> <span class="db-table-desc">Attributes (Red, XL)</span></li>
+          <li><span class="db-table-name">product_sections</span> <span class="db-table-desc">Homepage content sections config</span></li>
+          <li><span class="db-table-name">banners</span> <span class="db-table-desc">Promo banners &amp; sliders</span></li>
+          <li><span class="db-table-name">product_faqs</span> <span class="db-table-desc">Q&amp;A accordion list</span></li>
+          <li><span class="db-table-name">categories</span> <span class="db-table-desc">Nested category tree</span></li>
+          <li><span class="db-table-name">brands</span> <span class="db-table-desc">Product brands</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="db-grid" style="margin-top: 0;">
+      <div class="db-card">
+        <h4>Cart &amp; Order</h4>
+        <ul class="db-table-list">
+          <li><span class="db-table-name">carts</span> <span class="db-table-desc">Active shopping carts</span></li>
+          <li><span class="db-table-name">cart_items</span> <span class="db-table-desc">Items in cart</span></li>
+          <li><span class="db-table-name">orders</span> <span class="db-table-desc">All placed orders</span></li>
+          <li><span class="db-table-name">order_items</span> <span class="db-table-desc">Products per order</span></li>
+          <li><span class="db-table-name">order_status_logs</span> <span class="db-table-desc">Order status history</span></li>
+          <li><span class="db-table-name">shipping_rates</span> <span class="db-table-desc">Delivery pricing</span></li>
+          <li><span class="db-table-name">coupons</span> <span class="db-table-desc">Discount codes</span></li>
+        </ul>
+      </div>
+
+      <div class="db-card">
+        <h4>Payment</h4>
+        <ul class="db-table-list">
+          <li><span class="db-table-name">payment_gateways</span> <span class="db-table-desc">Razorpay / COD config</span></li>
+          <li><span class="db-table-name">payments</span> <span class="db-table-desc">Transaction record</span></li>
+          <li><span class="db-table-name">taxes</span> <span class="db-table-desc">GST/VAT rates</span></li>
+        </ul>
+
+        <h4 style="margin-top: 1.25rem;">Marketing</h4>
+        <ul class="db-table-list">
+          <li><span class="db-table-name">reviews</span> <span class="db-table-desc">Product ratings</span></li>
+          <li><span class="db-table-name">notifications</span> <span class="db-table-desc">Order alerts to customer</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PAGE 4: INCOME MODEL & PHASE COMPARISON -->
+    <div class="page-break"></div>
+
+    <h2><span class="sec-num">05</span> Income Model</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Phase</th>
+          <th>Source</th>
+          <th>How It Works</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Phase 1</strong></td>
+          <td>Direct Sales</td>
+          <td>Customer buys from your store → Direct Revenue</td>
+        </tr>
+        <tr>
+          <td><strong>Phase 2</strong></td>
+          <td>Subscription</td>
+          <td>Merchants pay monthly: Free / Starter / Pro plans</td>
+        </tr>
+        <tr>
+          <td><strong>Phase 2</strong></td>
+          <td>Transaction Fee</td>
+          <td>Small percentage fee on every merchant sale</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <p>
+        Phase 1 income is direct — sell products, collect money via Razorpay. The database is already built for Phase 2 multi-merchant SaaS. Adding subscription plans later requires no major changes to the backend.
+      </p>
+    </div>
+
+    <h2><span class="sec-num">06</span> Phase 1 vs Phase 2 Plan</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 50%;">Phase 1 — Now (Launch)</th>
+          <th style="width: 50%;">Phase 2 — Future (SaaS)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1 Store only</td>
+          <td>Multiple Merchants</td>
+        </tr>
+        <tr>
+          <td>Admin Dashboard (Single Owner)</td>
+          <td>Each Merchant gets own Dashboard</td>
+        </tr>
+        <tr>
+          <td>Products + Orders Management</td>
+          <td>Subscription Billing (monthly/annual)</td>
+        </tr>
+        <tr>
+          <td>Razorpay Payments Integration</td>
+          <td>Super Admin Analytics &amp; Control</td>
+        </tr>
+        <tr>
+          <td>Customer Management</td>
+          <td>Custom Domain routing per Shop</td>
+        </tr>
+        <tr>
+          <td>Inventory + Coupons configuration</td>
+          <td>Unlimited Shops on 1 Backend database</td>
+        </tr>
+        <tr>
+          <td>URL: <code>yourdomain.com</code></td>
+          <td>URL: <code>shopname.oaksolcommerce.in</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PAGE 5: PAYMENTS & DOMAIN DETAILS -->
+    <div class="page-break"></div>
+
+    <h2><span class="sec-num">07</span> Payment — Razorpay (India)</h2>
+    <table style="margin-top: 1rem;">
+      <thead>
+        <tr>
+          <th style="width: 25%;">Gateway Element</th>
+          <th>Indian Market Localization Specs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Gateway</strong></td>
+          <td>Razorpay — India's #1 payment platform</td>
+        </tr>
+        <tr>
+          <td><strong>UPI</strong></td>
+          <td>Seamless support for Google Pay, PhonePe, Paytm, BHIM</td>
+        </tr>
+        <tr>
+          <td><strong>Cards</strong></td>
+          <td>Credit Card, Debit Card (supported across all Indian banks)</td>
+        </tr>
+        <tr>
+          <td><strong>Banking</strong></td>
+          <td>Net Banking support for 50+ major Indian banks</td>
+        </tr>
+        <tr>
+          <td><strong>Offline</strong></td>
+          <td>Cash on Delivery (COD) configuration option</td>
+        </tr>
+        <tr>
+          <td><strong>EMI</strong></td>
+          <td>EMI option support for higher value checkout orders</td>
+        </tr>
+        <tr>
+          <td><strong>Refunds</strong></td>
+          <td>Instant refund capability triggered directly from admin dashboard</td>
+        </tr>
+        <tr>
+          <td><strong>Security</strong></td>
+          <td>PCI-DSS compliant, API credentials stored encrypted in DB</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout" style="border-left-color: #3b82f6;">
+      <div class="callout-title">Future Gateway Scalability</div>
+      <p>
+        <strong>Multi-Gateway Ready:</strong> Although Phase 1 launches exclusively with Razorpay (India) and COD, the backend routing architecture is database-driven. In the future, additional payment options (e.g., PhonePe, Cashfree, Paytm Payment Gateway) can be added by introducing new provider configurations in the <code>payment_gateways</code> database schema. No frontend modifications or core server rebuilds will be required.
+      </p>
+    </div>
+
+    <h2><span class="sec-num">08</span> Domain &amp; Website Address</h2>
+    <div class="features-grid" style="margin-top: 1rem;">
+      <div class="feature-card">
+        <h4>Default URL</h4>
+        <p><code>shop.oaksolcommerce.in</code> — Free and automatic upon setup.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Custom Domain</h4>
+        <p><code>yourdomain.com</code> — Connect your own domain seamlessly.</p>
+      </div>
+    </div>
+
+    <div class="callout" style="border-left-color: #22c55e;">
+      <div class="callout-title">Operational &amp; Custom Domain Features</div>
+      <p>
+        <strong>Both work:</strong> Customers reach the exact same store using either URL.  
+        <br><strong>Automatic SSL:</strong> The server automatically provisions and renews SSL certificates (HTTPS) for both the default subdomain and any connected custom domains.  
+        <br><strong>Dynamic Domain Mapping:</strong> When a request hits the backend, a custom middleware queries the <code>shop_domains</code> table to instantly map the incoming hostname to its unique <code>shop_id</code>. This resolves the store catalog dynamically, keeping custom domain configuration fast and secure.
+      </p>
+    </div>
+
+    <!-- PAGE 6: HIGH-VARIANT SCALABILITY & CUSTOM DOMAIN VISUAL DIAGRAMS -->
+    <div class="page-break"></div>
+
+    <h2><span class="sec-num">09</span> High-Variant Scalability &amp; Transaction Locking</h2>
+    <p>
+      The platform prevents concurrency conflicts when a product is configured with 20+ separate variants (e.g. multiple sizes, colors, and designs). Below is a visual workflow representing how the data models branch and lock during high-volume sales.
+    </p>
+
+    <div class="visual-block-container">
+      <div class="visual-flex">
+        <!-- Parent Product Node -->
+        <div class="parent-node" style="border-color: #a855f7;">
+          <div style="font-size: 0.8rem; text-transform: uppercase; color: #a855f7; margin-bottom: 0.25rem;">Parent Product</div>
+          Nike Sport Shoe
+          <div style="font-size: 0.7rem; font-weight: normal; color: var(--text-muted); margin-top: 0.25rem;">ID: products(id)</div>
+        </div>
+
+        <div style="font-size: 1.5rem; color: var(--text-muted);">➔</div>
+
+        <!-- Variants Child Node Grid -->
+        <div class="child-node-grid">
+          <div class="child-badge active">Red / 7</div>
+          <div class="child-badge">Red / 8</div>
+          <div class="child-badge">Red / 9</div>
+          <div class="child-badge">Red / 10</div>
+          <div class="child-badge">Blue / 7</div>
+          <div class="child-badge active">Blue / 8</div>
+          <div class="child-badge">Blue / 9</div>
+          <div class="child-badge">Blue / 10</div>
+          <div class="child-badge">Black / 7</div>
+          <div class="child-badge">Black / 8</div>
+          <div class="child-badge active">Black / 9</div>
+          <div class="child-badge">... Up to 20+</div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border-color); padding-top: 1.25rem; margin-top: 1rem;">
+        <h4 style="margin-bottom: 0.5rem; color: #a855f7;">Stock Transaction Workflow (No Race Conditions)</h4>
+        <div class="visual-flex" style="justify-content: flex-start; gap: 0.75rem; font-size: 0.82rem; text-align: center;">
+          <div style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); flex: 1;">
+            <strong>1. Order Request</strong><br>Customer clicks "Buy Now" on variant
+          </div>
+          <div style="font-size: 1.2rem; color: var(--text-muted);">➔</div>
+          <div style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); flex: 1;">
+            <strong>2. Row Level Lock</strong><br>PostgreSQL locks product_variants row
+          </div>
+          <div style="font-size: 1.2rem; color: var(--text-muted);">➔</div>
+          <div style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); flex: 1;">
+            <strong>3. Atomic Update</strong><br>Deducts stock &amp; logs stock changes
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2><span class="sec-num">10</span> Dynamic Custom Domain Routing Architecture</h2>
+    <p>
+      Merchants can connect their own domains (yourdomain.com). Our dynamic DNS middleware translates the domain to their store catalog instantly, without requiring server reboots.
+    </p>
+
+    <div class="visual-block-container" style="border-left-color: #10b981;">
+      <div class="flow-diagram-container" style="margin: 0; padding: 1rem 0; border: none; background: transparent;">
+        <div class="diagram-step" style="border-left: 4px solid #10b981; width: 340px;">
+          <div class="diagram-step-title">1. Incoming Web Request</div>
+          <div class="diagram-step-desc">Customer visits <code>www.aftabshop.com</code></div>
+        </div>
+        
+        <div class="diagram-arrow"></div>
+
+        <div class="diagram-step" style="width: 340px;">
+          <div class="diagram-step-title">2. Middleware Host Inspection</div>
+          <div class="diagram-step-desc">NestJS intercepts header: <code>Host = www.aftabshop.com</code></div>
+        </div>
+
+        <div class="diagram-arrow"></div>
+
+        <div class="diagram-step" style="width: 340px;">
+          <div class="diagram-step-title">3. Database Match Registry</div>
+          <div class="diagram-step-desc">Queries <code>shop_domains</code> table to retrieve <code>shop_id</code></div>
+        </div>
+
+        <div class="diagram-arrow"></div>
+
+        <div class="diagram-step" style="background: #10b981; color: #fff; width: 340px;">
+          <div class="diagram-step-title" style="color: #fff;">4. Load Merchant Catalog</div>
+          <div class="diagram-step-desc" style="color: rgba(255,255,255,0.9);">Injects <code>shop_id</code>, serves correct products &amp; details</div>
+        </div>
+      </div>
+    </div>
+
+    <h2><span class="sec-num">10.1</span> Homepage &amp; Product Page Content Logic</h2>
+    
+    <h3 style="margin-top: 1rem;">Homepage Content Resolution Pipeline</h3>
+    <p>
+      The storefront homepage is fully dynamic, loading layout elements based on active database registries in two layers:
+    </p>
+    <div style="margin: 1rem 0; padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); font-size: 0.88rem;">
+      <ol style="padding-left: 1.25rem;">
+        <li style="margin-bottom: 0.75rem;">
+          <strong>Banners &amp; Sliders:</strong> The system fetches active <code>banners</code> for the resolved <code>shop_id</code>, ordered by <code>sort_order</code>. These represent promotional slides at the top of the homepage.
+        </li>
+        <li style="margin-bottom: 0.75rem;">
+          <strong>Product Sections:</strong> The system fetches active <code>product_sections</code>. Each section contains a <code>config</code> JSON column that specifies how products are resolved:
+          <ul style="padding-left: 1.25rem; margin-top: 0.35rem; list-style-type: circle;">
+            <li>If config has <code>product_ids: [uuid1, uuid2, ...]</code>, those specific products are loaded.</li>
+            <li>If config has <code>category_id: uuid</code>, products from that category are resolved.</li>
+            <li>If config type is <code>featured</code>, products marked with <code>is_featured = true</code> are loaded.</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+
+    <h3>Product Detailed Page Content Resolution Pipeline</h3>
+    <p>
+      When a customer views a product page (e.g. Charcoal Ubtan), the catalog service aggregates and compiles all details:
+    </p>
+    <div style="margin: 1rem 0; padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); font-size: 0.88rem;">
+      <ul style="padding-left: 1.25rem;">
+        <li style="margin-bottom: 0.5rem;"><strong>Metadata &amp; Variants:</strong> Fetches name, description, SEO tags, variants, attributes, and stock quantities dynamically.</li>
+        <li style="margin-bottom: 0.5rem;"><strong>Rich Tabs:</strong> Loads dynamic structural sections directly from the product's <code>custom_sections</code> JSON array (supporting skincare benefits, fashion size guides, or electronics specs dynamically).</li>
+        <li style="margin-bottom: 0.5rem;"><strong>FAQs &amp; Reviews:</strong> Queries related accordion FAQs from <code>product_faqs</code> and approved reviews from <code>reviews</code>.</li>
+        <li style="margin-bottom: 0.5rem;"><strong>Related Products:</strong> Automatically queries other active products in the same category (up to 4 items) to render recommendations.</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="border-left-color: #ea580c; background-color: rgba(234, 88, 12, 0.03);">
+      <div class="callout-title">Architecture Note</div>
+      <p>
+        The database is built multi-tenant from Day 1. This means Phase 1 (1 store) and Phase 2 (many merchants) use the exact same backend. No rebuild needed — just unlock the merchant features when ready.
+      </p>
+    </div>
+
+
+
+    <p style="text-align: center; margin-top: 3rem; font-size: 0.85rem; letter-spacing: 0.05em; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+      CONFIDENTIAL — FOR INTERNAL USE ONLY — OAKSOL COMMERCE SPECIFICATION v1.0
+    </p>
+
+  </div>
+
+  <script>
+    // Theme toggle script
+    const themeBtn = document.getElementById('theme-toggle');
+    themeBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      if (currentTheme === 'dark') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    });
+  </script>
+</body>
+</html>

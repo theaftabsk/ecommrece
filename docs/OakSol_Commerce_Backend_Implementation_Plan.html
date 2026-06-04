@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OakSol Commerce - Backend Implementation Plan (Phase 1)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --primary: #0f172a;
+      --accent: #10b981; /* Fresh Emerald Green for implementation/action plans */
+      --accent-rgb: 16, 185, 129;
+      --border-color: #e2e8f0;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0b0f19;
+      --card-bg: #111827;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #f3f4f6;
+      --accent: #34d399;
+      --accent-rgb: 52, 211, 153;
+      --border-color: #1f2937;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Toolbar for interactive viewing */
+    .no-print-toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+      z-index: 1000;
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      color: var(--text-main);
+    }
+
+    .btn:hover {
+      background: var(--border-color);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: #059669;
+    }
+
+    /* Document Wrapper */
+    .document-container {
+      max-width: 900px;
+      margin: 90px auto 50px auto;
+      background: var(--card-bg);
+      padding: 4.5rem;
+      box-shadow: var(--shadow-lg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4 {
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.85rem;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.85rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .sec-num {
+      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+      color: var(--accent);
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-top: 1.75rem;
+      color: var(--text-main);
+    }
+
+    p {
+      margin-bottom: 1.2rem;
+      color: var(--text-muted);
+      font-size: 0.975rem;
+      text-align: justify;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin-bottom: 1.2rem;
+      padding-left: 1.5rem;
+      color: var(--text-muted);
+    }
+
+    li {
+      margin-bottom: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    /* Cover Page styling */
+    .cover-page {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 650px;
+      padding-bottom: 2rem;
+    }
+
+    .cover-header {
+      margin-top: 4rem;
+    }
+
+    .cover-logo {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .cover-logo span {
+      color: var(--accent);
+    }
+
+    .cover-title {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      line-height: 1.1;
+    }
+
+    .cover-subtitle {
+      font-size: 1.35rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      font-weight: 300;
+      margin-bottom: 1.5rem;
+    }
+
+    .cover-meta {
+      border-top: 1px solid var(--border-color);
+      padding-top: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .meta-item span {
+      display: block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .meta-item p {
+      font-weight: 600;
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    /* Page Breaks */
+    .page-break {
+      page-break-before: always;
+      margin-top: 4rem;
+    }
+
+    /* Callout Boxes */
+    .callout {
+      background-color: var(--bg-color);
+      border-left: 4px solid var(--accent);
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .callout p {
+      margin: 0;
+      font-size: 0.95rem;
+      text-align: left;
+    }
+
+    /* Code Blocks */
+    pre {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      padding: 1.25rem;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      overflow-x: auto;
+      margin: 1.25rem 0;
+      color: var(--text-main);
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg-color);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.88rem;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 0.75rem 1rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(0, 0, 0, 0.01);
+    }
+
+    /* Folder Structure Display */
+    .folder-tree {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      padding: 1.25rem 2rem;
+      border-radius: 8px;
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    /* Print styles */
+    @media print {
+      body {
+        background-color: #ffffff;
+        color: #000000;
+      }
+
+      .no-print-toolbar {
+        display: none;
+      }
+
+      .document-container {
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+        max-width: 100%;
+      }
+
+      .page-break {
+        page-break-before: always;
+        margin-top: 0;
+        padding-top: 1.5rem;
+      }
+
+      .callout, pre, .folder-tree {
+        border: 1px solid #000000 !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+
+      th {
+        background-color: #f1f5f9 !important;
+        color: #000000 !important;
+        border: 1px solid #000000 !important;
+      }
+
+      td {
+        border: 1px solid #000000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Toolbar -->
+  <div class="no-print-toolbar">
+    <div class="toolbar-title">OakSol Commerce — Backend Implementation Plan</div>
+    <div class="toolbar-actions">
+      <button class="btn" id="theme-toggle">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
+        </svg>
+        Toggle Theme
+      </button>
+      <button class="btn btn-primary" onclick="window.print()">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+          <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+        </svg>
+        Print / Save as PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Document Container -->
+  <div class="document-container">
+    
+    <!-- COVER PAGE -->
+    <div class="cover-page">
+      <div class="cover-logo">
+        OakSol <span>Commerce</span>
+      </div>
+      
+      <div class="cover-header">
+        <h1 class="cover-title">Backend Implementation Plan</h1>
+        <p class="cover-subtitle" style="font-size: 1.25rem;">Phase 1 — Node.js &amp; PostgreSQL Service Engine (India Focus)</p>
+      </div>
+
+      <div class="cover-meta">
+        <div class="meta-item">
+          <span>Prepared For</span>
+          <p>Mokasafat Amir Behesti (Boss)</p>
+        </div>
+        <div class="meta-item">
+          <span>Prepared By</span>
+          <p>Aftab</p>
+        </div>
+        <div class="meta-item">
+          <span>Date &amp; Version</span>
+          <p>June 2026 · v1.0</p>
+        </div>
+        <div class="meta-item">
+          <span>Security</span>
+          <p>Confidential — Internal Developer Specs</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: ARCHITECTURE & STRUCTURE -->
+    <div class="page-break"></div>
+    
+    <h2><span class="sec-num">01</span> Architecture &amp; Technology Stack</h2>
+    <p>
+      The OakSol Commerce backend is architected using a modular TypeScript framework to ensure robustness, explicit typing, and enterprise scalability. 
+    </p>
+
+    <table style="margin-top: 1rem;">
+      <thead>
+        <tr>
+          <th style="width: 25%;">Technology Component</th>
+          <th>Implementation Choice</th>
+          <th>Business / Technical Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Runtime Environment</strong></td>
+          <td>Node.js (v24.x LTS)</td>
+          <td>Asynchronous non-blocking I/O for high transaction volumes.</td>
+        </tr>
+        <tr>
+          <td><strong>Application Framework</strong></td>
+          <td>NestJS (v10.x)</td>
+          <td>Modular structure, dependency injection, and clean architectural patterns.</td>
+        </tr>
+        <tr>
+          <td><strong>Database Engine</strong></td>
+          <td>PostgreSQL (v16+)</td>
+          <td>Strict relational integrity, JSONB support for order snapshots.</td>
+        </tr>
+        <tr>
+          <td><strong>ORM Layer</strong></td>
+          <td>Prisma ORM</td>
+          <td>Type-safe database client and simplified schema migrations.</td>
+        </tr>
+        <tr>
+          <td><strong>Authentication</strong></td>
+          <td>Passport JWT</td>
+          <td>Stateless, secure JSON Web Token authentication for admins &amp; buyers.</td>
+        </tr>
+        <tr>
+          <td><strong>Payment API</strong></td>
+          <td>Razorpay SDK (India)</td>
+          <td>Secure API integration for UPI, Cards, Net Banking, and webhooks.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2><span class="sec-num">02</span> Project Folder Directory Structure</h2>
+    <p>
+      The directory structure follows standard NestJS conventions. Modules are logically isolated by domain namespaces, ensuring they are independent and SaaS-ready.
+    </p>
+
+    <div class="folder-tree">
+      oaksol-commerce-backend/<br>
+      ├── prisma/<br>
+      │   ├── schema.prisma (Database tables specifications)<br>
+      │   └── migrations/ (Prisma migration files history)<br>
+      ├── src/<br>
+      │   ├── common/ (Guards, filters, interceptors, middleware)<br>
+      │   │   └── middleware/<br>
+      │   │       └── tenant.middleware.ts (Resolves shop_id from host URL)<br>
+      │   ├── modules/<br>
+      │   │   ├── auth/ (Staff and customer auth modules)<br>
+      │   │   ├── shop/ (Shops and shop_domains management)<br>
+      │   │   ├── catalog/ (Products, categories, brands, variants)<br>
+      │   │   ├── inventory/ (Warehouses, stock levels, adjustment logs)<br>
+      │   │   ├── customer/ (Buyer profiles, guest tokens, addresses)<br>
+      │   │   ├── order/ (Cart checkout, order items, status logs)<br>
+      │   │   └── payment/ (Razorpay client and gateway webhook handlers)<br>
+      │   ├── app.module.ts (Root application configuration module)<br>
+      │   └── main.ts (Application execution entry point)<br>
+      ├── package.json<br>
+      └── tsconfig.json
+    </div>
+
+    <!-- PAGE 3: TENANT MIDDLEWARE & WEBHOOKS -->
+    <div class="page-break"></div>
+
+    <h2><span class="sec-num">03</span> Multi-Tenant Domain Middleware</h2>
+    <p>
+      Multi-tenancy is enforced at the network entry point. A custom NestJS middleware intercepts incoming HTTP requests, inspects the <code>Host</code> header, resolves the tenant's <code>shop_id</code>, and attaches it to the request context.
+    </p>
+
+    <pre>
+// Pseudo-code implementation for Hostname mapping
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+
+@Injectable()
+export class TenantMiddleware implements NestMiddleware {
+  constructor(private prisma: PrismaService) {}
+
+  async use(req: any, res: any, next: () => void) {
+    const host = req.headers.host; // e.g. 'aftabshop.oaksolcommerce.in'
+    
+    // Query database domain registry
+    const domainRecord = await this.prisma.shopDomain.findUnique({
+      where: { domain: host },
+      select: { shop_id: true }
+    });
+
+    if (!domainRecord) {
+      return res.status(404).json({ error: 'Domain mapping not found' });
+    }
+
+    // Attach resolved shop_id to request context
+    req.shopId = domainRecord.shop_id;
+    next();
+  }
+}</pre>
+
+    <h2><span class="sec-num">04</span> Razorpay Payment Webhook Pipeline</h2>
+    <p>
+      To prevent cart abandonment and guarantee immediate order processing, the payment webhook must process asynchronously and verify signatures to prevent spoofing.
+    </p>
+
+    <div class="flow-diagram-container">
+      <div class="diagram-step" style="border-left: 4px solid var(--accent);">
+        <div class="diagram-step-title">Razorpay Webhook Payload Receival</div>
+        <div class="diagram-step-desc">Razorpay POSTs to <code>/api/v1/payments/razorpay/webhook</code></div>
+      </div>
+      
+      <div class="diagram-arrow"></div>
+
+      <div class="diagram-step">
+        <div class="diagram-step-title">Signature Integrity Validation</div>
+        <div class="diagram-step-desc">Verify <code>x-razorpay-signature</code> using secret key</div>
+      </div>
+
+      <div class="diagram-arrow"></div>
+
+      <div class="diagram-step">
+        <div class="diagram-step-title">Database Transaction Execution</div>
+        <div class="diagram-step-desc">Update payment log → Update order status to 'confirmed'</div>
+      </div>
+
+      <div class="diagram-arrow"></div>
+
+      <div class="diagram-step" style="background: var(--accent); color: #fff;">
+        <div class="diagram-step-title" style="color: #fff;">Notification &amp; Logistics Trigger</div>
+        <div class="diagram-step-desc" style="color: rgba(255,255,255,0.9);">Deduct stock quantities, email customer receipt</div>
+      </div>
+    </div>
+
+    <!-- PAGE 4: API ENDPOINTS -->
+    <div class="page-break"></div>
+
+    <h2><span class="sec-num">05</span> Core API Endpoints Specification</h2>
+    <p>
+      The endpoints list provides a standardized REST interface. All routes require the <code>shop_id</code> mapping context resolved by the Tenant Middleware.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">Method</th>
+          <th style="width: 35%;">Path</th>
+          <th style="width: 15%;">Auth</th>
+          <th>Business Role &amp; Operations</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>POST</code></td>
+          <td>`/api/v1/auth/login`</td>
+          <td>Public</td>
+          <td>Verifies staff credentials, signs and returns Admin JWT.</td>
+        </tr>
+        <tr>
+          <td><code>GET</code></td>
+          <td>`/api/v1/catalog/products`</td>
+          <td>Public</td>
+          <td>Fetches catalog list with sorting and category filter scopes.</td>
+        </tr>
+        <tr>
+          <td><code>POST</code></td>
+          <td>`/api/v1/catalog/products`</td>
+          <td>Admin</td>
+          <td>Creates a new product with multiple variants, SKU codes, and stock.</td>
+        </tr>
+        <tr>
+          <td><code>POST</code></td>
+          <td>`/api/v1/checkout/cart`</td>
+          <td>Public/Guest</td>
+          <td>Validates stock quantities and initializes/updates cart items.</td>
+        </tr>
+        <tr>
+          <td><code>POST</code></td>
+          <td>`/api/v1/checkout/order`</td>
+          <td>Public/Guest</td>
+          <td>Locks stock levels, generates order receipt record in database.</td>
+        </tr>
+        <tr>
+          <td><code>POST</code></td>
+          <td>`/api/v1/payments/razorpay/order`</td>
+          <td>Public/Guest</td>
+          <td>Initiates Razorpay API request, returns external <code>razorpay_order_id</code>.</td>
+        </tr>
+        <tr>
+          <td><code>POST</code></td>
+          <td>`/api/v1/payments/razorpay/webhook`</td>
+          <td>Public (Webhook)</td>
+          <td>Listens for <code>payment.captured</code> and signs/processes transactions.</td>
+        </tr>
+        <tr>
+          <td><code>GET</code></td>
+          <td>`/api/v1/orders/admin`</td>
+          <td>Admin</td>
+          <td>Lists received orders for processing, filtering by state.</td>
+        </tr>
+        <tr>
+          <td><code>PATCH</code></td>
+          <td>`/api/v1/orders/admin/:id/status`</td>
+          <td>Admin</td>
+          <td>Updates status (e.g. Shipped) and creates audit status logs.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PAGE 5: ROADMAP & TIMELINE -->
+    <div class="page-break"></div>
+
+    <h2><span class="sec-num">06</span> Implementation Timeline Roadmap</h2>
+    <p>
+      The backend development phase is structured over a 5-week schedule, progressing from migration schemas to production-ready API pipelines.
+    </p>
+
+    <div class="callout" style="border-left-color: #3b82f6;">
+      <div class="callout-title">Week 1: Infrastructure &amp; Environment Setup</div>
+      <p>
+        Initialize the NestJS boilerplate. Set up the Prisma engine configurations. Run SQL database migrations to deploy the 29 schema tables with UUID extensions. Implement the base Tenant middleware to verify hostname requests.
+      </p>
+    </div>
+
+    <div class="callout" style="border-left-color: #8b5cf6;">
+      <div class="callout-title">Week 2: Authentication &amp; Catalog Services</div>
+      <p>
+        Deploy Passport JWT guards. Implement the core Product Catalog APIs (CRUD operations for products, variants, brands, and categories). Build admin management panels mapping custom fields, stock alert variables, and FAQ tables.
+      </p>
+    </div>
+
+    <div class="callout" style="border-left-color: #ec4899;">
+      <div class="callout-title">Week 3: Cart, Orders &amp; Checkout Pipeline</div>
+      <p>
+        Build the shopping cart module supporting both guests and registered users. Implement the checkout order generation pipeline, ensuring order items snap products using the JSONB Snapshot Pattern. Set up flat-rate shipping calculations.
+      </p>
+    </div>
+
+    <div class="callout" style="border-left-color: #f59e0b;">
+      <div class="callout-title">Week 4: Razorpay Payments &amp; Notification Webhooks</div>
+      <p>
+        Integrate the Razorpay SDK. Build order creation and webhook listener endpoints. Add cryptographic validation to incoming webhook headers. Trigger automated customer notification actions, inventory logging updates, and SMS alerts.
+      </p>
+    </div>
+
+    <div class="callout" style="border-left-color: #10b981;">
+      <div class="callout-title">Week 5: Quality Assurance, Security Audits &amp; Launch</div>
+      <p>
+        Execute automated unit tests for payment APIs and multi-tenant middleware. Run query profiling audits to check PostgreSQL indexes. Deploy code on secure cloud VMs, configure SSL certificates, and prepare API configurations for launch.
+      </p>
+    </div>
+
+    <p style="text-align: center; margin-top: 3rem; font-size: 0.85rem; letter-spacing: 0.05em; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+      CONFIDENTIAL — FOR INTERNAL USE ONLY — OAKSOL COMMERCE SPECIFICATION v1.0
+    </p>
+
+  </div>
+
+  <script>
+    // Theme toggle script
+    const themeBtn = document.getElementById('theme-toggle');
+    themeBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      if (currentTheme === 'dark') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    });
+  </script>
+</body>
+</html>
