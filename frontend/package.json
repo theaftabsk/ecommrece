@@ -12,6 +12,7 @@
     "dev:storefront": "npm run dev --workspace=apps/storefront",
     "dev:admin": "npm run dev --workspace=apps/admin-dashboard",
     "dev:merchant": "npm run dev --workspace=apps/merchant-dashboard",
+    "build": "npm run build:landing",
     "build:all": "npm run build --workspace=apps/landing-page && npm run build --workspace=apps/storefront && npm run build --workspace=apps/admin-dashboard",
     "build:storefront": "npm run build --workspace=apps/storefront",
     "build:admin": "npm run build --workspace=apps/admin-dashboard",
