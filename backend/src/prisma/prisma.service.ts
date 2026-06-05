@@ -10,6 +10,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     const connectionString = process.env.DATABASE_URL;
     const pool = new Pool({
       connectionString,
+      ssl: { rejectUnauthorized: false },
       lookup: (hostname, options, callback) => {
         dns.lookup(hostname, { ...options, family: 4 }, callback);
       }
