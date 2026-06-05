@@ -11,10 +11,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     const pool = new Pool({
       connectionString,
       ssl: { rejectUnauthorized: false },
-      lookup: (hostname, options, callback) => {
+      lookup: (hostname: any, options: any, callback: any) => {
         dns.lookup(hostname, { ...options, family: 4 }, callback);
       }
-    });
+    } as any);
     const adapter = new PrismaPg(pool);
     super({ adapter });
   }

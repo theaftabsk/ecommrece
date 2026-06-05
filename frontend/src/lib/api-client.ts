@@ -34,9 +34,13 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   // Resolve host context from browser to identify current tenant subdomain/domain
   const tenantDomain = typeof window !== 'undefined' ? window.location.host : '';
 
+  // Get platform admin token if saved
+  const adminToken = typeof window !== 'undefined' ? localStorage.getItem('oaksol_admin_token') : null;
+
   const headers = {
     'Content-Type': 'application/json',
     ...(tenantDomain ? { 'X-Tenant-Domain': tenantDomain } : {}),
+    ...(adminToken ? { 'Authorization': `Bearer ${adminToken}` } : {}),
     ...options.headers,
   };
 
@@ -264,6 +268,13 @@ export const catalogApi = {
   }) => request<any>('/catalog/tenant-requests', { method: 'POST', body: JSON.stringify(requestData) }),
 
   // ─── Platform Super Admin APIs ────────────────────────────────────────────
+  // Admin Login
+  adminLogin: async (data: { email: string; password: string }) =>
+    request<{ token: string }>('/catalog/admin/login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
   // Dashboard stats
   getAdminStats: async () => request<any>('/catalog/admin/stats'),
 

@@ -88,14 +88,16 @@ function AdminDashboardAppContent() {
   }, [isLoggedIn]);
 
   // Handlers
-  const handleLogin = () => {
+  const handleLogin = (token: string) => {
     setIsLoggedIn(true);
     localStorage.setItem('oaksol_admin_logged_in', 'true');
+    localStorage.setItem('oaksol_admin_token', token);
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     localStorage.removeItem('oaksol_admin_logged_in');
+    localStorage.removeItem('oaksol_admin_token');
   };
 
   const handleApproveRequest = async (id: string) => {

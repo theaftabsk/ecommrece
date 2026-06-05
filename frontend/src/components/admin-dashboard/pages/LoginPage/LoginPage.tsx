@@ -1,20 +1,30 @@
 import React from 'react';
 import { Icons } from '../../icons';
+import { catalogApi } from '@oaksol/api-client';
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (token: string) => void;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) { setError('Please enter email and password'); return; }
     setError('');
-    onLogin();
+    setLoading(true);
+    try {
+      const res = await catalogApi.adminLogin({ email, password });
+      onLogin(res.token);
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,6 +45,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               placeholder="admin@oaksol.com"
               required
               autoFocus
+              disabled={loading}
             />
           </div>
           <div className="field-group">
@@ -45,11 +56,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
               required
+              disabled={loading}
             />
           </div>
           {error && <div className="auth-error">{error}</div>}
-          <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '13px' }}>
-            <Icons.Lock /> Login as Super Admin
+          <button 
+            type="submit" 
+            className="btn-primary" 
+            style={{ width: '100%', justifyContent: 'center', padding: '13px' }}
+            disabled={loading}
+          >
+            {loading ? 'Authenticating...' : <><Icons.Lock /> Login as Super Admin</>}
           </button>
         </form>
       </div>

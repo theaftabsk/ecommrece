@@ -1545,5 +1545,24 @@ export class CatalogService {
     });
     return { success: true, message: 'Thank you! Your message has been received.' };
   }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PLATFORM ADMIN / SUPER ADMIN AUTHENTICATION
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  async adminLogin(dto: { email: string; password: string }) {
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@oaksol.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'OakSolAdminPassword2026!';
+
+    if (dto.email !== adminEmail || dto.password !== adminPassword) {
+      throw new BadRequestException('Invalid admin credentials.');
+    }
+
+    const jwt = await import('jsonwebtoken');
+    const secret = process.env.JWT_SECRET || 'oaksol-commerce-jwt-secret-key-replace-in-production';
+    const token = jwt.sign({ role: 'super_admin' }, secret, { expiresIn: '7d' });
+
+    return { token };
+  }
 }
 
