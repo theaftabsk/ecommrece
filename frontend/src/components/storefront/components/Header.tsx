@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { catalogApi } from '@oaksol/api-client';
+import { Icons } from '../icons';
 
 export const Header: React.FC = () => {
   const { cartCount, setCartOpen } = useCart();
@@ -77,7 +78,7 @@ export const Header: React.FC = () => {
                   onClick={() => goTo(`/categories/${cat.slug}`)}
                 >
                   {cat.name}
-                  {hasDropdown && <svg className="nav-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>}
+                  {hasDropdown && <Icons.ChevronDown />}
                 </span>
 
                 {hasDropdown && openDropdown === cat.id && (

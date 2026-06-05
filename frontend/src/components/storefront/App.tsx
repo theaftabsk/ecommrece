@@ -12,6 +12,7 @@ import { AllProducts } from './pages/AllProducts/index';
 import { Categories } from './pages/Categories/index';
 import AdminDashboardApp from '@oaksol/admin-dashboard';
 import MerchantDashboardApp from '@oaksol/merchant-dashboard';
+import { Icons } from './icons';
 
 // ─── Error Boundary ───────────────────────────────────────────────────────────
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
@@ -62,11 +63,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           fontFamily: 'Inter, sans-serif', padding: '40px 20px', textAlign: 'center'
         }}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 20 }}>
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
+          <Icons.Warning />
           <h2 style={{ fontSize: '1.75rem', marginBottom: 10, color: '#1F2937' }}>Something went wrong</h2>
           <p style={{ color: '#6B7280', marginBottom: 6, maxWidth: 480 }}>{this.state.error?.message || 'An unexpected error occurred.'}</p>
           <p style={{ color: '#9CA3AF', fontSize: '0.85rem', marginBottom: 24 }}>Please refresh the page or contact support.</p>
@@ -195,9 +192,7 @@ const StorefrontGateway: React.FC = () => {
                 color: '#818CF8',
                 marginBottom: '16px'
               }}>
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                </svg>
+                <Icons.Globe />
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#FFFFFF', marginBottom: '8px', marginTop: 0 }}>SaaS Website</h3>
               <p style={{ fontSize: '0.9rem', color: '#9CA3AF', lineHeight: '1.5', marginBottom: '20px' }}>
@@ -219,9 +214,7 @@ const StorefrontGateway: React.FC = () => {
               textDecoration: 'none'
             }}>
               Go to Website
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
+              <Icons.ArrowRight />
             </a>
           </div>
 
@@ -249,9 +242,7 @@ const StorefrontGateway: React.FC = () => {
                 color: '#34D399',
                 marginBottom: '16px'
               }}>
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
+                <Icons.Store />
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#FFFFFF', marginBottom: '8px', marginTop: 0 }}>Storefronts</h3>
               <p style={{ fontSize: '0.9rem', color: '#9CA3AF', lineHeight: '1.5', marginBottom: '20px' }}>
@@ -267,9 +258,7 @@ const StorefrontGateway: React.FC = () => {
                   gap: '6px'
                 }}>
                   • maheorthe.localhost:3001
-                  <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
+                  <Icons.ExternalLink />
                 </a>
                 <a href="http://nature-glow.localhost:3001" style={{
                   color: '#34D399',
@@ -280,9 +269,7 @@ const StorefrontGateway: React.FC = () => {
                   gap: '6px'
                 }}>
                   • nature-glow.localhost:3001
-                  <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
+                  <Icons.ExternalLink />
                 </a>
               </div>
             </div>
@@ -315,9 +302,7 @@ const StorefrontGateway: React.FC = () => {
                 color: '#F87171',
                 marginBottom: '16px'
               }}>
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
+                <Icons.ShieldAdmin />
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#FFFFFF', marginBottom: '8px', marginTop: 0 }}>Super Admin</h3>
               <p style={{ fontSize: '0.9rem', color: '#9CA3AF', lineHeight: '1.5', marginBottom: '20px' }}>
@@ -339,9 +324,7 @@ const StorefrontGateway: React.FC = () => {
               textDecoration: 'none'
             }}>
               Open Admin
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
+              <Icons.ArrowRight />
             </a>
           </div>
         </div>
