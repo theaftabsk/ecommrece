@@ -16,8 +16,13 @@ export class TenantMiddleware implements NestMiddleware {
     // Extract hostname (remove port if exists)
     const hostname = tenantDomain.split(':')[0];
 
-    // If it is the platform admin subdomain, bypass tenant verification
-    if (hostname === 'admin.localhost' || hostname.startsWith('admin.')) {
+    // If it is the platform admin or API subdomain, bypass tenant verification
+    if (
+      hostname === 'admin.localhost' || 
+      hostname.startsWith('admin.') ||
+      hostname === 'api.localhost' ||
+      hostname.startsWith('api.')
+    ) {
       next();
       return;
     }
