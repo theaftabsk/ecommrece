@@ -10,7 +10,6 @@
     "postinstall": "prisma generate",
     "prebuild": "node prebuild.js",
     "build": "prisma generate && node node_modules/@nestjs/cli/bin/nest build --builder swc 2>&1",
-    "postbuild": "node postbuild.js",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
