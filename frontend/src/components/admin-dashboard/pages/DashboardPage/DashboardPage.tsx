@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icons } from '../../icons';
 import { StatCard, Badge, EmptyState, LoadingSpinner } from '../../shared';
+import { storeDomainLabel } from '../../utils';
 
 interface DashboardPageProps {
   stats: any;
@@ -49,7 +50,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 <div className="store-avatar">{shop.name[0]}</div>
                 <div>
                   <strong>{shop.name}</strong>
-                  <div className="muted">{shop.slug}.localhost</div>
+                  <div className="muted">{storeDomainLabel(shop.slug)}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

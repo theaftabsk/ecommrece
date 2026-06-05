@@ -41,13 +41,32 @@ export class TenantMiddleware implements NestMiddleware {
       return;
     }
 
-    // Find the domain registry to match shop_id
+    let shopId: string | undefined;
+
+    // 1. Try to match the exact domain hostname in shop_domains (works for custom domains and exact matches)
     const domainRecord = await this.prisma.shopDomain.findUnique({
       where: { domain: hostname },
-      select: { shop_id: true, status: true },
+      select: { shop_id: true },
     });
 
-    let shopId = domainRecord?.shop_id;
+    if (domainRecord) {
+      shopId = domainRecord.shop_id;
+    } else {
+      // 2. If no exact match, check if it's a subdomain slug
+      const isSubdomain = hostname.endsWith(`.${platformDomain}`) || hostname.endsWith('.localhost');
+      
+      if (isSubdomain) {
+        // Extract the subdomain slug (e.g., "nature-glow" from "nature-glow.posix.digital" or "nature-glow.localhost")
+        const slug = hostname.split('.')[0];
+        const shop = await this.prisma.shop.findUnique({
+          where: { slug },
+          select: { id: true }
+        });
+        if (shop) {
+          shopId = shop.id;
+        }
+      }
+    }
 
     // Local development fallback: if domain registry not matched, fallback to first active shop
     if (!shopId && (hostname === 'localhost' || hostname === '127.0.0.1')) {

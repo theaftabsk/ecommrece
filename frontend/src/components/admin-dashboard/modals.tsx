@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Icons } from './icons';
 import { copyText } from './utils';
+import { storeUrl, storeAdminUrl, storeDomainLabel } from './utils';
 
 // ─── Credentials Modal ────────────────────────────────────────────────────────
 export const CredentialsModal: React.FC<{ data: any; onClose: () => void }> = ({ data, onClose }) => (
@@ -16,8 +17,8 @@ export const CredentialsModal: React.FC<{ data: any; onClose: () => void }> = ({
       </div>
       <div className="modal-body">
         {[
-          { label: 'Store Domain', value: data.domain || `http://${data.shopSlug}.localhost:3000` },
-          { label: 'Admin Login URL', value: data.credentials?.loginUrl || `http://${data.shopSlug}.localhost:3000/admin` },
+          { label: 'Store Domain', value: data.domain || storeUrl(data.shopSlug) },
+          { label: 'Admin Login URL', value: data.credentials?.loginUrl || storeAdminUrl(data.shopSlug) },
           { label: 'Owner Email', value: data.credentials?.email || data.ownerEmail },
           { label: 'Login Password', value: data.credentials?.password || data.ownerPassword || '—' },
         ].map(({ label, value }) => (
@@ -56,7 +57,7 @@ export const EditShopModal: React.FC<{
       <div className="modal-box" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <span className="modal-icon-svg" style={{ color: '#6366F1' }}><Icons.Edit /></span>
-          <div><h3>Edit Store</h3><p>{shop.slug}.localhost</p></div>
+          <div><h3>Edit Store</h3><p>{storeDomainLabel(shop.slug)}</p></div>
           <button className="modal-close" onClick={onClose}><Icons.X /></button>
         </div>
         <div className="modal-body" style={{ gap: 14 }}>

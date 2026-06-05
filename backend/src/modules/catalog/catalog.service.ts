@@ -734,11 +734,15 @@ export class CatalogService {
       }
     });
 
-    // 2. Create local test domain mapping
+    const platformDomain = process.env.PLATFORM_DOMAIN || 'posix.digital';
+    const isLocal = platformDomain === 'localhost' || platformDomain.includes('localhost');
+    const storeDomain = isLocal ? `${dto.slug}.localhost` : `${dto.slug}.${platformDomain}`;
+
+    // 2. Create dynamic domain mapping
     await this.prisma.shopDomain.create({
       data: {
         shop_id: shop.id,
-        domain: `${dto.slug}.localhost`,
+        domain: storeDomain,
         type: 'subdomain',
         is_primary: true,
         status: 'active',
@@ -837,7 +841,7 @@ export class CatalogService {
     return {
       shopId: shop.id,
       shopSlug: shop.slug,
-      domain: `${dto.slug}.localhost`,
+      domain: storeDomain,
       ownerEmail: dto.ownerEmail,
       ownerPassword: password,
     };
@@ -911,21 +915,26 @@ export class CatalogService {
       data: { status: 'approved' }
     });
 
+    const platformDomain = process.env.PLATFORM_DOMAIN || 'posix.digital';
+    const isLocal = platformDomain === 'localhost' || platformDomain.includes('localhost');
+    const scheme = isLocal ? 'http' : 'https';
+    const portSuffix = isLocal ? ':3000' : '';
+
     return {
       message: 'Shop successfully provisioned',
       ...result,
       credentials: {
         email: request.owner_email,
         password: generatedPassword,
-        loginUrl: `http://${request.slug}.localhost:3000/admin`,
-        domain: `http://${request.slug}.localhost:3000`
+        loginUrl: `${scheme}://${request.slug}.${platformDomain}${portSuffix}/admin`,
+        domain: `${scheme}://${request.slug}.${platformDomain}${portSuffix}`
       }
     };
   }
 
   // Get all provisioned shops with their domains and owners
   async getShops() {
-    return this.prisma.shop.findMany({
+    const shops = await this.prisma.shop.findMany({
       include: {
         domains: true,
         owner: {
@@ -939,6 +948,11 @@ export class CatalogService {
       },
       orderBy: { created_at: 'desc' }
     });
+
+    return shops.map((shop) => ({
+      ...shop,
+      domains: this.formatShopDomains(shop.domains, shop.slug),
+    }));
   }
 
   // Get dynamic details of a single shop
@@ -981,7 +995,10 @@ export class CatalogService {
       throw new NotFoundException('Shop details not found');
     }
 
-    return shop;
+    return {
+      ...shop,
+      domains: this.formatShopDomains(shop.domains, shop.slug),
+    };
   }
 
   // Update shop metadata (Super Admin)
@@ -1291,6 +1308,22 @@ export class CatalogService {
         product_snap: item.product_snap,
       })),
     };
+  }
+
+  private formatShopDomains(domains: any[], slug: string) {
+    const platformDomain = process.env.PLATFORM_DOMAIN || 'posix.digital';
+    const isLocal = platformDomain === 'localhost' || platformDomain.includes('localhost');
+    const storeSuffix = isLocal ? 'localhost' : platformDomain;
+
+    return domains.map(d => {
+      if (d.type === 'subdomain') {
+        return {
+          ...d,
+          domain: `${slug}.${storeSuffix}`
+        };
+      }
+      return d;
+    });
   }
 }
 

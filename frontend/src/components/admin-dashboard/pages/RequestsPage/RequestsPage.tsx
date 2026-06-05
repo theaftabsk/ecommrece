@@ -1,6 +1,7 @@
 import React from 'react';
 import { Icons } from '../../icons';
 import { Badge, EmptyState, LoadingSpinner } from '../../shared';
+import { storeDomainLabel } from '../../utils';
 
 interface RequestsPageProps {
   requests: any[];
@@ -48,7 +49,7 @@ export const RequestsPage: React.FC<RequestsPageProps> = ({
                     <span><Icons.Mail /> {req.owner_email}</span>
                     {req.phone && <span><Icons.Phone /> {req.phone}</span>}
                     {req.category && <span><Icons.Tag /> {req.category}</span>}
-                    <span className="muted"><Icons.Globe /> {req.slug}.localhost</span>
+                    <span className="muted"><Icons.Globe /> {storeDomainLabel(req.slug)}</span>
                     <span className="muted"><Icons.Calendar /> {new Date(req.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>

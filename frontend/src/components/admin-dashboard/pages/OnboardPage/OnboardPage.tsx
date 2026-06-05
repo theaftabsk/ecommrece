@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Icons } from '../../icons';
 import { Badge } from '../../shared';
-import { genPassword } from '../../utils';
+import { genPassword, storeUrl, storeAdminUrl, storeDomainLabel } from '../../utils';
 import { CredentialsModal } from '../../modals';
 
 interface OnboardPageProps {
@@ -36,11 +36,11 @@ export const OnboardPage: React.FC<OnboardPageProps> = ({ onProvision, provision
       setCredentials({
         shopSlug: derivedSlug,
         ownerEmail,
-        domain: `http://${derivedSlug}.localhost:3000`,
+        domain: storeUrl(derivedSlug),
         credentials: {
           email: ownerEmail,
           password: genPwd,
-          loginUrl: `http://${derivedSlug}.localhost:3000/admin`,
+          loginUrl: storeAdminUrl(derivedSlug),
         },
       });
       setName(''); setSlug(''); setOwnerName(''); setOwnerEmail('');
@@ -69,7 +69,7 @@ export const OnboardPage: React.FC<OnboardPageProps> = ({ onProvision, provision
               <div className="field-group">
                 <label>Subdomain Slug (auto)</label>
                 <input value={slug} onChange={e => setSlug(e.target.value)} placeholder={derivedSlug || 'auto-generated'} />
-                <span className="field-hint"><Icons.Globe /> {derivedSlug || '…'}.localhost:3000</span>
+                <span className="field-hint"><Icons.Globe /> {derivedSlug || '…'}.{(process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'posix.digital')}</span>
               </div>
             </div>
 
@@ -136,7 +136,7 @@ export const OnboardPage: React.FC<OnboardPageProps> = ({ onProvision, provision
             <h3 className="card-title">What happens next?</h3>
             <ul className="feature-list">
               {[
-                'Subdomain gets registered: slug.localhost',
+                'Subdomain gets registered: slug.' + (process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'posix.digital'),
                 'Owner account created with secure credentials',
                 'Store database record provisioned',
                 'Admin login URL shared immediately',

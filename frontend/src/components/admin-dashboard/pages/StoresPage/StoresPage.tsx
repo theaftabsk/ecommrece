@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icons } from '../../icons';
 import { Badge, EmptyState, LoadingSpinner } from '../../shared';
+import { storeUrl, storeDomainLabel } from '../../utils';
 
 interface StoresPageProps {
   shops: any[];
@@ -26,7 +27,8 @@ export const StoresPage: React.FC<StoresPageProps> = ({ shops, loading }) => {
       {loading ? <LoadingSpinner message="Fetching storefronts…" /> : (
         <div className="stores-grid">
           {shops.map(shop => {
-            const domain = shop.domains?.[0]?.domain || `${shop.slug}.localhost`;
+            const domain = shop.domains?.[0]?.domain || storeDomainLabel(shop.slug);
+            const href = shop.domains?.[0]?.domain ? `https://${shop.domains[0].domain}` : storeUrl(shop.slug);
             return (
               <div key={shop.id} className="store-card" onClick={() => navigate(`/stores/${shop.slug}`)}>
                 <div className="store-card-header">
@@ -43,7 +45,7 @@ export const StoresPage: React.FC<StoresPageProps> = ({ shops, loading }) => {
                 </div>
                 <div className="store-card-footer">
                   <a
-                    href={`http://${domain}:3000`}
+                    href={href}
                     target="_blank"
                     rel="noreferrer"
                     onClick={e => e.stopPropagation()}

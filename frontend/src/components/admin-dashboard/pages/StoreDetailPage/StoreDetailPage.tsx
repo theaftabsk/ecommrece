@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { catalogApi } from '@oaksol/api-client';
 import { Icons } from '../../icons';
 import { Badge, StatCard, DataTable, InfoRow, EmptyState, LoadingSpinner } from '../../shared';
+import { storeDomainLabel, storeUrl, storeAdminUrl } from '../../utils';
 
 interface StoreDetailPageProps {
   onEdit: (shop: any) => void;
@@ -51,7 +52,7 @@ export const StoreDetailPage: React.FC<StoreDetailPageProps> = ({
           <button className="btn-back" onClick={() => navigate('/stores')}><Icons.ArrowLeft /></button>
           <div>
             <h2>{loading ? 'Loading…' : shop?.name}</h2>
-            <p className="header-sub">{shop?.slug}.localhost</p>
+            <p className="header-sub">{shop?.slug ? storeDomainLabel(shop.slug) : ''}</p>
           </div>
         </div>
         {shop && (
@@ -84,8 +85,8 @@ export const StoreDetailPage: React.FC<StoreDetailPageProps> = ({
               <InfoRow label="Created" value={new Date(shop.created_at).toLocaleString()} />
               {shop.description && <InfoRow label="Description" value={shop.description} />}
               <InfoRow label="Store URL" value={
-                <a href={`http://${shop.domains?.[0]?.domain || shop.slug + '.localhost:3000'}`} target="_blank" rel="noreferrer" className="link-primary" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  {shop.domains?.[0]?.domain || `${shop.slug}.localhost:3000`} <Icons.ExternalLink />
+                <a href={shop.domains?.[0]?.domain ? `https://${shop.domains[0].domain}` : storeUrl(shop.slug)} target="_blank" rel="noreferrer" className="link-primary" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  {shop.domains?.[0]?.domain || storeDomainLabel(shop.slug)} <Icons.ExternalLink />
                 </a>
               } />
             </div>
@@ -98,7 +99,7 @@ export const StoreDetailPage: React.FC<StoreDetailPageProps> = ({
                   <InfoRow label="Owner ID" value={shop.owner.id} mono />
                   <InfoRow label="Email" value={shop.owner.email} copy highlight />
                   <InfoRow label="Password" value={shop.owner.password || `${shop.slug}@OakSol2026`} copy highlight />
-                  <InfoRow label="Admin URL" value={`http://${shop.slug}.localhost:3000/admin`} copy highlight />
+                  <InfoRow label="Admin URL" value={storeAdminUrl(shop.slug)} copy highlight />
                   <div className="hash-block">
                     <div className="hash-label">Password Hash (bcrypt)</div>
                     <div className="hash-value">{shop.owner.password_hash}</div>
