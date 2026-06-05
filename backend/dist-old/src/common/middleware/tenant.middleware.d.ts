@@ -1,0 +1,10 @@
+import { NestMiddleware } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+import { PrismaService } from '../../prisma/prisma.service';
+export declare class TenantMiddleware implements NestMiddleware {
+    private prisma;
+    constructor(prisma: PrismaService);
+    use(req: Request & {
+        shopId?: string;
+    }, res: Response, next: NextFunction): Promise<void>;
+}

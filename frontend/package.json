@@ -1,24 +1,27 @@
 {
-  "name": "oaksol-commerce-frontend",
+  "name": "frontend-new",
+  "version": "0.1.0",
   "private": true,
-  "version": "1.0.0",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:landing\" \"npm run dev:storefront\" \"npm run dev:admin\" \"npm run dev:merchant\"",
-    "dev:landing": "npm run dev --workspace=apps/landing-page",
-    "dev:storefront": "npm run dev --workspace=apps/storefront",
-    "dev:admin": "npm run dev --workspace=apps/admin-dashboard",
-    "dev:merchant": "npm run dev --workspace=apps/merchant-dashboard",
-    "build": "npm run build:landing",
-    "build:all": "npm run build --workspace=apps/landing-page && npm run build --workspace=apps/storefront && npm run build --workspace=apps/admin-dashboard",
-    "build:storefront": "npm run build --workspace=apps/storefront",
-    "build:admin": "npm run build --workspace=apps/admin-dashboard",
-    "build:landing": "npm run build --workspace=apps/landing-page"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "next": "16.2.7",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-router-dom": "^7.17.0"
   },
   "devDependencies": {
-    "concurrently": "^10.0.3"
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.7",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
