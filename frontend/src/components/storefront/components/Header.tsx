@@ -20,8 +20,20 @@ export const Header: React.FC = () => {
 
         const homeData = await catalogApi.getHomepage();
         setShop(homeData.shop || null);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to load categories in header:', err);
+        const isMissingTenant = err.status === 404 || (err.message && (err.message.includes('Store domain mapping') || err.message.includes('Tenant-Domain')));
+        if (isMissingTenant) {
+          const host = window.location.host;
+          const protocol = window.location.protocol;
+          if (host.includes('localhost') || host.includes('127.0.0.1')) {
+            const port = host.split(':')[1] ? `:${host.split(':')[1]}` : '';
+            window.location.href = `${protocol}//localhost${port}`;
+          } else {
+            const platformDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'posix.digital';
+            window.location.href = `${protocol}//${platformDomain}`;
+          }
+        }
       }
     };
     fetchHeaderData();

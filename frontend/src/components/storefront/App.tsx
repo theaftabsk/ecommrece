@@ -27,6 +27,35 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
   render() {
     if (this.state.hasError) {
+      const err = this.state.error;
+      const isMissingTenant = err && (
+        err.status === 404 || 
+        (err.message && (err.message.includes('Store domain mapping') || err.message.includes('Tenant-Domain')))
+      );
+
+      if (isMissingTenant) {
+        if (typeof window !== 'undefined') {
+          const host = window.location.host;
+          const protocol = window.location.protocol;
+          if (host.includes('localhost') || host.includes('127.0.0.1')) {
+            const port = host.split(':')[1] ? `:${host.split(':')[1]}` : '';
+            window.location.href = `${protocol}//localhost${port}`;
+          } else {
+            const platformDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'posix.digital';
+            window.location.href = `${protocol}//${platformDomain}`;
+          }
+        }
+        return (
+          <div style={{
+            minHeight: '100vh', background: '#FAF7F2',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'Inter, sans-serif', padding: '40px 20px', textAlign: 'center', color: '#6B7280'
+          }}>
+            <p>Redirecting to main platform...</p>
+          </div>
+        );
+      }
+
       return (
         <div style={{
           minHeight: '100vh', background: '#FAF7F2',

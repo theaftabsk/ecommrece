@@ -22,6 +22,20 @@ export class TenantMiddleware implements NestMiddleware {
       return;
     }
 
+    const platformDomain = process.env.PLATFORM_DOMAIN || 'posix.digital';
+
+    // SaaS platform landing page domains bypass tenant checks (public endpoints)
+    if (
+      hostname === platformDomain ||
+      hostname === `www.${platformDomain}` ||
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === 'www.localhost'
+    ) {
+      next();
+      return;
+    }
+
     // Find the domain registry to match shop_id
     const domainRecord = await this.prisma.shopDomain.findUnique({
       where: { domain: hostname },

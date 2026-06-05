@@ -1,18 +1,20 @@
 /* @oaksol/api-client - Fetch API Client Configuration */
 
+const PLATFORM_DOMAIN = (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_PLATFORM_DOMAIN) || 'posix.digital';
+
 const getApiBaseUrl = (): string => {
   // 1. Check current domain context first to restrict/enforce production API
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    // Only use the production API on admin.posix.digital, shop.posix.digital, or their subdomains
+    // Only use the production API on admin.PLATFORM_DOMAIN, shop.PLATFORM_DOMAIN, or their subdomains
     const isProdDomain = 
-      hostname === 'admin.posix.digital' || 
-      hostname === 'shop.posix.digital' || 
-      hostname.endsWith('.shop.posix.digital') ||
-      hostname.endsWith('.admin.posix.digital');
+      hostname === `admin.${PLATFORM_DOMAIN}` || 
+      hostname === `shop.${PLATFORM_DOMAIN}` || 
+      hostname.endsWith(`.shop.${PLATFORM_DOMAIN}`) ||
+      hostname.endsWith(`.admin.${PLATFORM_DOMAIN}`);
 
     if (isProdDomain) {
-      return 'https://api.posix.digital/api/v1';
+      return `https://api.${PLATFORM_DOMAIN}/api/v1`;
     }
   }
 
@@ -50,7 +52,30 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       } catch {
         errorJson = { message: errorText };
       }
-      throw new Error(errorJson.message || `HTTP error! Status: ${response.status}`);
+      
+      const isMissingTenant = response.status === 404 && (
+        (errorJson.message && (
+          errorJson.message.includes('Store domain mapping') || 
+          errorJson.message.includes('Tenant-Domain')
+        ))
+      );
+
+      if (isMissingTenant && typeof window !== 'undefined') {
+        const host = window.location.host;
+        const protocol = window.location.protocol;
+        if (host.includes('localhost') || host.includes('127.0.0.1')) {
+          const port = host.split(':')[1] ? `:${host.split(':')[1]}` : '';
+          window.location.href = `${protocol}//localhost${port}`;
+        } else {
+          window.location.href = `${protocol}//${PLATFORM_DOMAIN}`;
+        }
+        // Return a promise that never resolves/rejects to prevent component from executing further logic while redirecting
+        return new Promise<T>(() => {});
+      }
+
+      const err = new Error(errorJson.message || `HTTP error! Status: ${response.status}`) as any;
+      err.status = response.status;
+      throw err;
     }
 
     return (await response.json()) as T;

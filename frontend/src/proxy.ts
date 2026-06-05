@@ -12,11 +12,15 @@ export function proxy(request: NextRequest) {
   // 1. Super Admin domain: admin.posix.digital or admin.localhost
   const isSuperAdmin = parts[0] === 'admin';
 
-  // 2. SaaS Landing page: posix.digital, localhost, or 127.0.0.1
+  const platformDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'posix.digital';
+
+  // 2. SaaS Landing page: platformDomain, localhost, 127.0.0.1, or www subdomains
   const isLandingPage = 
     hostname === 'localhost' || 
+    hostname === 'www.localhost' ||
     hostname === '127.0.0.1' || 
-    hostname === 'posix.digital';
+    hostname === platformDomain ||
+    hostname === `www.${platformDomain}`;
 
   if (isSuperAdmin) {
     url.pathname = `/admin-dashboard${url.pathname}`;
