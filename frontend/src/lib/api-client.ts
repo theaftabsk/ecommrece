@@ -6,12 +6,10 @@ const getApiBaseUrl = (): string => {
   // 1. Check current domain context first to restrict/enforce production API
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    // Only use the production API on admin.PLATFORM_DOMAIN, shop.PLATFORM_DOMAIN, or their subdomains
+    // Only use the production API on the platform domain and its subdomains
     const isProdDomain = 
-      hostname === `admin.${PLATFORM_DOMAIN}` || 
-      hostname === `shop.${PLATFORM_DOMAIN}` || 
-      hostname.endsWith(`.shop.${PLATFORM_DOMAIN}`) ||
-      hostname.endsWith(`.admin.${PLATFORM_DOMAIN}`);
+      hostname === PLATFORM_DOMAIN || 
+      hostname.endsWith(`.${PLATFORM_DOMAIN}`);
 
     if (isProdDomain) {
       return `https://api.${PLATFORM_DOMAIN}/api/v1`;
