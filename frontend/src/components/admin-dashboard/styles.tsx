@@ -304,20 +304,153 @@ export const AdminStyles: React.FC = () => (
     .auth-screen {
       min-height: 100vh; display: flex; align-items: center; justify-content: center;
       font-family: 'Inter', sans-serif;
-      background: radial-gradient(ellipse at 30% 20%, #EEF2FF 0%, #F8FAFC 60%);
+      background: #F8FAFC;
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-screen::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0) 70%);
+      top: -15%;
+      left: -10%;
+      z-index: 1;
+      filter: blur(50px);
+      pointer-events: none;
+    }
+    .auth-screen::after {
+      content: '';
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0) 70%);
+      bottom: -20%;
+      right: -10%;
+      z-index: 1;
+      filter: blur(60px);
+      pointer-events: none;
     }
     .auth-card {
-      background: #FFF; border: 1px solid #E2E8F0; border-radius: 16px;
-      padding: 44px; width: 100%; max-width: 420px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      background: rgba(255, 255, 255, 0.75); /* Frosted glass light card */
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 24px;
+      padding: 48px 40px; 
+      width: 100%; 
+      max-width: 440px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.04), 
+                  0 1px 3px rgba(15, 23, 42, 0.02),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      position: relative;
+      z-index: 10;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
     }
-    .auth-brand { text-align: center; margin-bottom: 28px; }
-    .auth-logo { display: flex; justify-content: center; margin-bottom: 14px; color: #6366F1; }
-    .auth-logo svg { width: 40px; height: 40px; }
-    .auth-brand h2 { font-size: 1.4rem; font-weight: 800; color: #0F172A; }
-    .auth-brand p { color: #64748B; font-size: 0.875rem; margin-top: 6px; }
-    .auth-form { display: flex; flex-direction: column; gap: 16px; }
-    .auth-error { color: #EF4444; font-size: 0.82rem; text-align: center; padding: 8px; background: #FEF2F2; border-radius: 6px; }
+    .auth-card:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 30px 60px rgba(99, 102, 241, 0.08), 
+                  0 0 30px rgba(99, 102, 241, 0.05);
+    }
+    .auth-brand { text-align: center; margin-bottom: 32px; }
+    .auth-logo { 
+      display: inline-flex; 
+      justify-content: center; 
+      align-items: center;
+      margin-bottom: 18px; 
+      color: #6366F1; 
+      background: rgba(99, 102, 241, 0.06);
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      border-radius: 16px;
+      width: 70px;
+      height: 70px;
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.06);
+      transition: transform 0.3s ease;
+    }
+    .auth-logo:hover {
+      transform: scale(1.05) rotate(5deg);
+    }
+    .auth-logo svg { width: 38px; height: 38px; }
+    .auth-brand h2 { 
+      font-size: 1.6rem; 
+      font-weight: 800; 
+      color: #0F172A; 
+      letter-spacing: -0.02em;
+    }
+    .auth-brand p { 
+      color: #64748B; 
+      font-size: 0.875rem; 
+      margin-top: 8px; 
+      font-weight: 500;
+    }
+    .auth-form { display: flex; flex-direction: column; gap: 20px; }
+    .auth-form .field-group label {
+      color: #475569;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .auth-form .field-group input {
+      background: #FFFFFF;
+      border: 1.5px solid #E2E8F0;
+      color: #0F172A;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      transition: all 0.25s ease;
+      width: 100%;
+    }
+    .auth-form .field-group input:focus {
+      border-color: #6366F1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      background: #FFFFFF;
+    }
+    .auth-form .field-group input::placeholder {
+      color: #94A3B8;
+    }
+    .auth-form button.btn-primary {
+      background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+      color: #FFF;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+      transition: all 0.2s ease;
+      width: 100%;
+      justify-content: center;
+    }
+    .auth-form button.btn-primary:hover {
+      background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(99, 102, 241, 0.25);
+    }
+    .auth-form button.btn-primary:active {
+      transform: translateY(1px);
+    }
+    .auth-form button.btn-primary:disabled {
+      background: rgba(99, 102, 241, 0.4);
+      color: rgba(255, 255, 255, 0.5);
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+    .auth-error { 
+      color: #B91C1C; 
+      font-size: 0.82rem; 
+      text-align: center; 
+      padding: 10px 14px; 
+      background: #FEF2F2; 
+      border: 1px solid #FEE2E2;
+      border-radius: 8px; 
+    }
+
 
     /* ── Modals ── */
     .modal-overlay {
