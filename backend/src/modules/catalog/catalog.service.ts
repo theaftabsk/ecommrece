@@ -1551,8 +1551,8 @@ export class CatalogService {
   // ─────────────────────────────────────────────────────────────────────────────
 
   async adminLogin(dto: { email: string; password: string }) {
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@oaksol.com';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'OakSolAdminPassword2026!';
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@oaksol.in';
+    const adminPassword = process.env.ADMIN_PASSWORD || '123';
 
     if (dto.email !== adminEmail || dto.password !== adminPassword) {
       throw new BadRequestException('Invalid admin credentials.');

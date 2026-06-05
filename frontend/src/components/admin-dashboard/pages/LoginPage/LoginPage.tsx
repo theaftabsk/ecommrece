@@ -42,7 +42,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="admin@oaksol.com"
+              placeholder="admin@oaksol.in"
               required
               autoFocus
               disabled={loading}
