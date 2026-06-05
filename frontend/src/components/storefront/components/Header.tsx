@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
+import { useCustomer } from '../context/CustomerContext';
 import { useNavigate } from 'react-router-dom';
 import { catalogApi } from '@oaksol/api-client';
 import { Icons } from '../icons';
+import { getWishlistCount } from '../pages/Wishlist/index';
 
 export const Header: React.FC = () => {
   const { cartCount, setCartOpen } = useCart();
+  const { customer } = useCustomer();
   const navigate = useNavigate();
   const [categories, setCategories] = useState<any[]>([]);
   const [shop, setShop] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
+  const [wishCount, setWishCount] = useState(0);
+
+  useEffect(() => { setWishCount(getWishlistCount()); }, []);
 
   useEffect(() => {
     const fetchHeaderData = async () => {
@@ -107,8 +113,19 @@ export const Header: React.FC = () => {
           })}
         </nav>
 
-        {/* Right: Cart + Mobile Toggle */}
+        {/* Right: Search + Wishlist + Account + Cart + Mobile Toggle */}
         <div className="header-actions">
+          <button className="hdr-icon-btn" onClick={() => navigate('/search')} title="Search" aria-label="Search">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+          <button className="hdr-icon-btn" onClick={() => navigate('/wishlist')} title="Wishlist" aria-label="Wishlist" style={{ position: 'relative' }}>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill={wishCount > 0 ? 'var(--sf-accent)' : 'none'} stroke="var(--sf-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            {wishCount > 0 && <span className="hdr-wish-badge">{wishCount}</span>}
+          </button>
+          <button className="hdr-icon-btn" onClick={() => navigate(customer ? '/account' : '/login')} title={customer ? 'My Account' : 'Login'} aria-label="Account">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            {customer && <span className="hdr-acct-dot" />}
+          </button>
           <div className="cart-trigger-icon" onClick={() => { setCartOpen(true); setMobileMenuOpen(false); }}>
             <span className="cart-bag-symbol">🛒</span>
             {cartCount > 0 && <span className="cart-badge-count">{cartCount}</span>}
@@ -127,25 +144,63 @@ export const Header: React.FC = () => {
 
       {/* Mobile Drawer */}
       <div className={`mobile-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+        {/* Mobile Search */}
+        <div className="mobile-search-wrap">
+          <button className="mobile-search-bar" onClick={() => goTo('/search')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search products…
+          </button>
+        </div>
+
+        {/* Account */}
+        <div className="mobile-acct-row">
+          {customer ? (
+            <>
+              <div className="mobile-acct-avatar">{customer.name?.charAt(0)?.toUpperCase() || 'U'}</div>
+              <div>
+                <div className="mobile-acct-name">{customer.name}</div>
+                <div className="mobile-acct-email">{customer.email}</div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mobile-acct-avatar" style={{ background: '#e5e7eb', color: '#6b7280' }}>?</div>
+              <div>
+                <div className="mobile-acct-name" style={{ color: 'var(--sf-text-muted)' }}>Not signed in</div>
+                <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                  <button className="mobile-auth-btn" onClick={() => goTo('/login')}>Login</button>
+                  <button className="mobile-auth-btn primary" onClick={() => goTo('/register')}>Register</button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Shop Nav */}
+        <div className="mobile-section-label">Shop</div>
         <nav className="mobile-nav-links">
-          <span onClick={() => goTo('/')}>Home</span>
-          <span onClick={() => goTo('/categories')}>All Categories</span>
+          <span onClick={() => goTo('/')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Home
+          </span>
+          <span onClick={() => goTo('/products')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-4 0v2"/></svg>
+            All Products
+          </span>
+          <span onClick={() => goTo('/categories')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+            All Categories
+          </span>
 
           {menuCategories.map((cat: any) => {
             const subs = (cat.children || []).filter((s: any) => s.show_in_menu !== false);
             const isExpanded = mobileExpanded === cat.id;
-
             return (
               <div key={cat.id} className="mobile-cat-group">
                 <div className="mobile-cat-header">
-                  <span onClick={() => goTo(`/categories/${cat.slug}`)}>
-                    {cat.name}
-                  </span>
+                  <span onClick={() => goTo(`/categories/${cat.slug}`)}>{cat.name}</span>
                   {subs.length > 0 && (
-                    <button
-                      className="mobile-expand-btn"
-                      onClick={() => setMobileExpanded(isExpanded ? null : cat.id)}
-                    >
+                    <button className="mobile-expand-btn" onClick={() => setMobileExpanded(isExpanded ? null : cat.id)}>
                       {isExpanded ? '▲' : '▼'}
                     </button>
                   )}
@@ -153,15 +208,55 @@ export const Header: React.FC = () => {
                 {subs.length > 0 && isExpanded && (
                   <div className="mobile-subcats">
                     {subs.map((sub: any) => (
-                      <span key={sub.id} className="mobile-subcat-item" onClick={() => goTo(`/categories/${sub.slug}`)}>
-                        ↳ {sub.name}
-                      </span>
+                      <span key={sub.id} className="mobile-subcat-item" onClick={() => goTo(`/categories/${sub.slug}`)}>↳ {sub.name}</span>
                     ))}
                   </div>
                 )}
               </div>
             );
           })}
+        </nav>
+
+        {/* Account Links (if logged in) */}
+        {customer && (
+          <>
+            <div className="mobile-section-label">My Account</div>
+            <nav className="mobile-nav-links plain">
+              <span onClick={() => goTo('/account')}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                My Profile
+              </span>
+              <span onClick={() => goTo('/account/orders')}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                My Orders
+              </span>
+              <span onClick={() => goTo('/wishlist')}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                Wishlist {wishCount > 0 && <span className="mobile-badge">{wishCount}</span>}
+              </span>
+            </nav>
+          </>
+        )}
+
+        {/* Info Pages */}
+        <div className="mobile-section-label">Information</div>
+        <nav className="mobile-nav-links plain">
+          <span onClick={() => goTo('/about')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            About Us
+          </span>
+          <span onClick={() => goTo('/contact')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.63 19.79 19.79 0 010 1.99 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+            Contact Us
+          </span>
+          <span onClick={() => goTo('/privacy')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Privacy Policy
+          </span>
+          <span onClick={() => goTo('/terms')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Terms & Conditions
+          </span>
         </nav>
       </div>
 
@@ -393,6 +488,77 @@ export const Header: React.FC = () => {
         }
         .mobile-subcat-item:hover {
           color: var(--sf-accent); background: rgba(21,128,61,0.05);
+        }
+        .hdr-icon-btn {
+          display: flex; align-items: center; justify-content: center;
+          width: 36px; height: 36px; border-radius: 10px;
+          border: none; background: transparent; cursor: pointer;
+          color: var(--sf-text-muted); position: relative;
+          transition: background 0.15s, color 0.15s;
+        }
+        .hdr-icon-btn:hover { background: rgba(0,0,0,0.05); color: var(--sf-text-main); }
+        .hdr-wish-badge {
+          position: absolute; top: -4px; right: -4px;
+          background: #dc2626; color: #fff;
+          font-size: 0.6rem; font-weight: 700;
+          width: 16px; height: 16px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .hdr-acct-dot {
+          position: absolute; bottom: 6px; right: 6px;
+          width: 7px; height: 7px; border-radius: 50%;
+          background: var(--sf-accent);
+        }
+
+        /* ─── Enhanced Mobile Drawer ─── */
+        .mobile-search-wrap { padding: 0 0 16px; }
+        .mobile-search-bar {
+          display: flex; align-items: center; gap: 10px;
+          width: 100%; padding: 12px 16px;
+          background: var(--sf-bg); border: 1.5px solid var(--sf-border);
+          border-radius: 12px; font-size: 0.9rem; color: var(--sf-text-muted);
+          cursor: pointer; font-family: var(--font-sans); text-align: left;
+          transition: border-color 0.2s;
+        }
+        .mobile-search-bar:hover { border-color: var(--sf-accent); }
+        .mobile-acct-row {
+          display: flex; align-items: center; gap: 14px;
+          padding: 16px; background: var(--sf-bg);
+          border-radius: 14px; margin-bottom: 20px;
+          border: 1px solid var(--sf-border);
+        }
+        .mobile-acct-avatar {
+          width: 46px; height: 46px; border-radius: 50%;
+          background: var(--sf-accent); color: #fff;
+          font-size: 1.3rem; font-weight: 700;
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .mobile-acct-name { font-weight: 700; font-size: 0.93rem; color: var(--sf-text-main); }
+        .mobile-acct-email { font-size: 0.76rem; color: var(--sf-text-muted); margin-top: 2px; }
+        .mobile-auth-btn {
+          padding: 6px 14px; border-radius: 8px; font-size: 0.8rem;
+          font-weight: 600; cursor: pointer; font-family: var(--font-sans);
+          border: 1.5px solid var(--sf-border); background: #fff; color: var(--sf-text-main);
+          transition: all 0.15s;
+        }
+        .mobile-auth-btn.primary {
+          background: var(--sf-accent); color: #fff; border-color: var(--sf-accent);
+        }
+        .mobile-section-label {
+          font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.1em; color: var(--sf-text-muted);
+          padding: 4px 0 10px; margin-top: 16px;
+        }
+        .mobile-nav-links.plain > span {
+          display: flex; align-items: center; gap: 12px;
+          font-family: var(--font-sans) !important; font-size: 0.93rem !important;
+          font-weight: 500 !important; color: var(--sf-text-muted);
+        }
+        .mobile-nav-links.plain > span:hover { color: var(--sf-accent); }
+        .mobile-badge {
+          background: var(--sf-accent); color: #fff;
+          font-size: 0.65rem; font-weight: 700;
+          padding: 2px 6px; border-radius: 10px; margin-left: 4px;
         }
       `}</style>
     </header>

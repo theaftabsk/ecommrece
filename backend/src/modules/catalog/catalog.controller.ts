@@ -367,5 +367,91 @@ export class CatalogController {
   ) {
     return this.catalogService.createTenantRequest(dto);
   }
+
+  // ─── Customer Auth & Profile ─────────────────────────────────────────────────
+
+  @Post('customer/register')
+  async customerRegister(
+    @Req() req: Request & { shopId?: string },
+    @Body() dto: { name: string; email: string; phone?: string; password: string }
+  ) {
+    const shopId = req.shopId;
+    if (!shopId) throw new BadRequestException('Shop context missing from request');
+    return this.catalogService.customerRegister(shopId, dto);
+  }
+
+  @Post('customer/login')
+  async customerLogin(
+    @Req() req: Request & { shopId?: string },
+    @Body() dto: { email: string; password: string }
+  ) {
+    const shopId = req.shopId;
+    if (!shopId) throw new BadRequestException('Shop context missing from request');
+    return this.catalogService.customerLogin(shopId, dto);
+  }
+
+  @Get('customer/me')
+  async getCustomerMe(@Req() req: Request & { shopId?: string }) {
+    const shopId = req.shopId;
+    if (!shopId) throw new BadRequestException('Shop context missing from request');
+    const token = (req.headers as any)['authorization']?.replace('Bearer ', '');
+    if (!token) throw new BadRequestException('Authorization token required');
+    const { customerId } = await this.catalogService.verifyCustomerToken(token);
+    return this.catalogService.getCustomerMe(shopId, customerId);
+  }
+
+  @Patch('customer/me')
+  async updateCustomerMe(
+    @Req() req: Request & { shopId?: string },
+    @Body() dto: { name?: string; phone?: string; avatar_url?: string; current_password?: string; new_password?: string }
+  ) {
+    const shopId = req.shopId;
+    if (!shopId) throw new BadRequestException('Shop context missing from request');
+    const token = (req.headers as any)['authorization']?.replace('Bearer ', '');
+    if (!token) throw new BadRequestException('Authorization token required');
+    const { customerId } = await this.catalogService.verifyCustomerToken(token);
+    return this.catalogService.updateCustomerMe(shopId, customerId, dto);
+  }
+
+  @Get('customer/orders')
+  async getCustomerOrders(@Req() req: Request & { shopId?: string }) {
+    const shopId = req.shopId;
+    if (!shopId) throw new BadRequestException('Shop context missing from request');
+    const token = (req.headers as any)['authorization']?.replace('Bearer ', '');
+    if (!token) throw new BadRequestException('Authorization token required');
+    const { customerId } = await this.catalogService.verifyCustomerToken(token);
+    return this.catalogService.getCustomerOrders(shopId, customerId);
+  }
+
+  // ─── Pages Content ────────────────────────────────────────────────────────────
+
+  @Get('pages')
+  async getPages(@Req() req: Request & { shopId?: string }) {
+    const shopId = req.shopId;
+    if (!shopId) throw new BadRequestException('Shop context missing from request');
+    return this.catalogService.getPageContent(shopId);
+  }
+
+  @Patch('pages')
+  async savePages(
+    @Req() req: Request & { shopId?: string },
+    @Body() dto: Record<string, string>
+  ) {
+    const shopId = req.shopId;
+    if (!shopId) throw new BadRequestException('Shop context missing from request');
+    return this.catalogService.savePageContent(shopId, dto);
+  }
+
+  // ─── Contact Form ─────────────────────────────────────────────────────────────
+
+  @Post('contact')
+  async submitContact(
+    @Req() req: Request & { shopId?: string },
+    @Body() dto: { name: string; email: string; subject?: string; message: string }
+  ) {
+    const shopId = req.shopId;
+    if (!shopId) throw new BadRequestException('Shop context missing from request');
+    return this.catalogService.submitContactForm(shopId, dto);
+  }
 }
 

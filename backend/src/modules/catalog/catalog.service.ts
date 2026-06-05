@@ -1325,5 +1325,225 @@ export class CatalogService {
       return d;
     });
   }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CUSTOMER AUTH
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  async customerRegister(shopId: string, dto: {
+    name: string;
+    email: string;
+    phone?: string;
+    password: string;
+  }) {
+    const bcrypt = await import('bcryptjs');
+    const jwt = await import('jsonwebtoken');
+
+    // Check if email is already taken
+    const existing = await this.prisma.customer.findFirst({
+      where: { shop_id: shopId, email: dto.email },
+    });
+    if (existing) {
+      throw new BadRequestException('An account with this email already exists.');
+    }
+
+    const password_hash = await bcrypt.hash(dto.password, 10);
+    const customer = await this.prisma.customer.create({
+      data: {
+        shop_id: shopId,
+        name: dto.name,
+        email: dto.email,
+        phone: dto.phone || null,
+        password_hash,
+        is_verified: false,
+      },
+      select: { id: true, name: true, email: true, phone: true, avatar_url: true, created_at: true },
+    });
+
+    const secret = process.env.CUSTOMER_JWT_SECRET || 'customer_secret_oaksol_2026';
+    const token = jwt.sign({ customerId: customer.id, shopId }, secret, { expiresIn: '30d' });
+
+    return { customer, token };
+  }
+
+  async customerLogin(shopId: string, dto: { email: string; password: string }) {
+    const bcrypt = await import('bcryptjs');
+    const jwt = await import('jsonwebtoken');
+
+    const customer = await this.prisma.customer.findFirst({
+      where: { shop_id: shopId, email: dto.email },
+    });
+    if (!customer || !customer.password_hash) {
+      throw new BadRequestException('Invalid email or password.');
+    }
+
+    const valid = await bcrypt.compare(dto.password, customer.password_hash);
+    if (!valid) {
+      throw new BadRequestException('Invalid email or password.');
+    }
+
+    const secret = process.env.CUSTOMER_JWT_SECRET || 'customer_secret_oaksol_2026';
+    const token = jwt.sign({ customerId: customer.id, shopId }, secret, { expiresIn: '30d' });
+
+    return {
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        avatar_url: customer.avatar_url,
+        created_at: customer.created_at,
+      },
+      token,
+    };
+  }
+
+  async getCustomerMe(shopId: string, customerId: string) {
+    const customer = await this.prisma.customer.findFirst({
+      where: { id: customerId, shop_id: shopId },
+      select: {
+        id: true, name: true, email: true, phone: true, avatar_url: true,
+        total_orders: true, total_spent: true, created_at: true,
+        addresses: { orderBy: { is_default: 'desc' } },
+      },
+    });
+    if (!customer) throw new NotFoundException('Customer not found.');
+    return customer;
+  }
+
+  async updateCustomerMe(shopId: string, customerId: string, dto: {
+    name?: string;
+    phone?: string;
+    avatar_url?: string;
+    current_password?: string;
+    new_password?: string;
+  }) {
+    const bcrypt = await import('bcryptjs');
+    const data: any = {};
+
+    if (dto.name !== undefined) data.name = dto.name;
+    if (dto.phone !== undefined) data.phone = dto.phone;
+    if (dto.avatar_url !== undefined) data.avatar_url = dto.avatar_url;
+
+    if (dto.new_password) {
+      if (!dto.current_password) {
+        throw new BadRequestException('Current password is required to set a new password.');
+      }
+      const customer = await this.prisma.customer.findUnique({ where: { id: customerId } });
+      const valid = await bcrypt.compare(dto.current_password, customer?.password_hash || '');
+      if (!valid) throw new BadRequestException('Current password is incorrect.');
+      data.password_hash = await bcrypt.hash(dto.new_password, 10);
+    }
+
+    const updated = await this.prisma.customer.update({
+      where: { id: customerId },
+      data,
+      select: { id: true, name: true, email: true, phone: true, avatar_url: true, created_at: true },
+    });
+    return updated;
+  }
+
+  async getCustomerOrders(shopId: string, customerId: string) {
+    const orders = await this.prisma.order.findMany({
+      where: { shop_id: shopId, customer_id: customerId },
+      orderBy: { created_at: 'desc' },
+      include: {
+        items: true,
+      },
+    });
+    return orders.map(o => ({
+      id: o.id,
+      order_number: o.order_number,
+      status: o.status,
+      total: o.total,
+      subtotal: o.subtotal,
+      shipping_amount: o.shipping_amount,
+      discount_amount: o.discount_amount,
+      created_at: o.created_at,
+      items: o.items.map(i => ({
+        id: i.id,
+        qty: i.qty,
+        unit_price: i.unit_price,
+        line_total: i.line_total,
+        product_snap: i.product_snap,
+      })),
+    }));
+  }
+
+  // Validate customer JWT — returns { customerId, shopId } or throws
+  async verifyCustomerToken(token: string): Promise<{ customerId: string; shopId: string }> {
+    const jwt = await import('jsonwebtoken');
+    const secret = process.env.CUSTOMER_JWT_SECRET || 'customer_secret_oaksol_2026';
+    try {
+      const payload = jwt.verify(token, secret) as any;
+      return { customerId: payload.customerId, shopId: payload.shopId };
+    } catch {
+      throw new BadRequestException('Invalid or expired token.');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PAGES CONTENT (from settings table, group = 'pages')
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  async getPageContent(shopId: string) {
+    const settings = await this.prisma.setting.findMany({
+      where: { shop_id: shopId, group: 'pages' },
+    });
+
+    const shop = await this.prisma.shop.findUnique({
+      where: { id: shopId },
+      select: { name: true, logo_url: true, description: true },
+    });
+
+    // Turn array into keyed object for easy frontend consumption
+    const content: Record<string, string> = {};
+    for (const s of settings) {
+      content[s.key] = s.value;
+    }
+
+    return { shop, content };
+  }
+
+  async savePageContent(shopId: string, data: Record<string, string>) {
+    // Upsert each key-value pair into settings table with group='pages'
+    const promises = Object.entries(data).map(([key, value]) =>
+      this.prisma.setting.upsert({
+        where: { shop_id_key: { shop_id: shopId, key } },
+        create: { shop_id: shopId, key, value, group: 'pages' },
+        update: { value },
+      })
+    );
+    await Promise.all(promises);
+    return { success: true, saved: Object.keys(data).length };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CONTACT FORM — saves as notification for admin
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  async submitContactForm(shopId: string, dto: {
+    name: string;
+    email: string;
+    subject?: string;
+    message: string;
+  }) {
+    // We save it as an activity log (no customer_id needed)
+    await this.prisma.activityLog.create({
+      data: {
+        shop_id: shopId,
+        action: 'contact_form_submission',
+        entity_type: 'contact',
+        metadata: {
+          name: dto.name,
+          email: dto.email,
+          subject: dto.subject || '',
+          message: dto.message,
+          submitted_at: new Date().toISOString(),
+        },
+      },
+    });
+    return { success: true, message: 'Thank you! Your message has been received.' };
+  }
 }
 

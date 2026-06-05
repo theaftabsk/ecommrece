@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
+import { CustomerProvider } from './context/CustomerContext';
 import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
 import { Home } from './pages/Home/index';
 import { Product } from './pages/Product/index';
@@ -10,6 +12,16 @@ import { Success } from './pages/Success/index';
 import { Payment } from './pages/Payment/index';
 import { AllProducts } from './pages/AllProducts/index';
 import { Categories } from './pages/Categories/index';
+import { Search } from './pages/Search/index';
+import { Login } from './pages/Login/index';
+import { Register } from './pages/Register/index';
+import { MyAccount } from './pages/Account/index';
+import { MyOrders } from './pages/Account/orders';
+import { Wishlist } from './pages/Wishlist/index';
+import { About } from './pages/About/index';
+import { Contact } from './pages/Contact/index';
+import { Privacy } from './pages/Privacy/index';
+import { Terms } from './pages/Terms/index';
 import AdminDashboardApp from '@oaksol/admin-dashboard';
 import MerchantDashboardApp from '@oaksol/merchant-dashboard';
 import { Icons } from './icons';
@@ -384,24 +396,37 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <CartProvider>
-          <div className="storefront-app-shell" style={{ background: '#FAF7F2', minHeight: '100vh', paddingTop: '70px' }}>
-            <Header />
-            <main className="storefront-main-content">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/products" element={<AllProducts />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/categories/:categorySlug" element={<Categories />} />
-                <Route path="/products/:slug" element={<Product />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/checkout/payment/:orderId" element={<Payment />} />
-                <Route path="/order-success" element={<Success />} />
-              </Routes>
-            </main>
-            <CartDrawer />
-          </div>
-        </CartProvider>
+        <CustomerProvider>
+          <CartProvider>
+            <div className="storefront-app-shell" style={{ background: '#FAF7F2', minHeight: '100vh', paddingTop: '70px', display: 'flex', flexDirection: 'column' }}>
+              <Header />
+              <main className="storefront-main-content" style={{ flex: 1 }}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/products" element={<AllProducts />} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/categories/:categorySlug" element={<Categories />} />
+                  <Route path="/products/:slug" element={<Product />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/checkout/payment/:orderId" element={<Payment />} />
+                  <Route path="/order-success" element={<Success />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/account" element={<MyAccount />} />
+                  <Route path="/account/orders" element={<MyOrders />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/terms" element={<Terms />} />
+                </Routes>
+              </main>
+              <Footer />
+              <CartDrawer />
+            </div>
+          </CartProvider>
+        </CustomerProvider>
       </Router>
     </ErrorBoundary>
   );

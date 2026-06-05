@@ -340,3 +340,50 @@ export const paymentApi = {
     razorpay_signature: string;
   }) => request<any>('/payments/razorpay/verify', { method: 'POST', body: JSON.stringify(data) }),
 };
+
+// ─── Customer Auth APIs ───────────────────────────────────────────────────────
+export const customerApi = {
+  register: async (data: { name: string; email: string; phone?: string; password: string }) =>
+    request<{ customer: any; token: string }>('/catalog/customer/register', {
+      method: 'POST', body: JSON.stringify(data),
+    }),
+
+  login: async (data: { email: string; password: string }) =>
+    request<{ customer: any; token: string }>('/catalog/customer/login', {
+      method: 'POST', body: JSON.stringify(data),
+    }),
+
+  getMe: async (token: string) =>
+    request<any>('/catalog/customer/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  updateMe: async (data: {
+    name?: string; phone?: string; avatar_url?: string;
+    current_password?: string; new_password?: string;
+  }, token: string) =>
+    request<any>('/catalog/customer/me', {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    }),
+
+  getMyOrders: async (token: string) =>
+    request<any[]>('/catalog/customer/orders', {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getPages: async () =>
+    request<{ shop: any; content: Record<string, string> }>('/catalog/pages'),
+
+  savePages: async (data: Record<string, string>) =>
+    request<{ success: boolean; saved: number }>('/catalog/pages', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  submitContact: async (data: { name: string; email: string; subject?: string; message: string }) =>
+    request<{ success: boolean; message: string }>('/catalog/contact', {
+      method: 'POST', body: JSON.stringify(data),
+    }),
+};

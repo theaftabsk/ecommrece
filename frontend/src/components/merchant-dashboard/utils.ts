@@ -1,4 +1,4 @@
-export type MerchantTab = 'overview' | 'products' | 'categories' | 'banners' | 'orders' | 'inventory' | 'settings';
+export type MerchantTab = 'overview' | 'products' | 'categories' | 'banners' | 'orders' | 'inventory' | 'settings' | 'pages';
 
 export function formatINR(val: any) {
   const num = parseFloat(val);
